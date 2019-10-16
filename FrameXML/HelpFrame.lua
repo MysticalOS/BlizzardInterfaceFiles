@@ -340,9 +340,9 @@ end
 
 function HelpFrame_ShowReportCheatingDialog(playerLocation)
 	local frame = ReportCheatingDialog;
+	frame.target = playerLocation;
 	frame.CommentFrame.EditBox:SetText("");
 	frame.CommentFrame.EditBox.InformationText:Show();
-	frame.reportToken = C_ReportSystem.InitiateReportPlayer(PLAYER_REPORT_TYPE_CHEATING, playerLocation);
 	StaticPopupSpecial_Show(frame);
 end
 
@@ -1171,11 +1171,12 @@ function HelpBrowser_ToggleTooltip(button, browser)
 	if (not hasResized) then
 		local tooltip = BrowserSettingsTooltip;
 		local maxWidth = tooltip.Title:GetWidth()
-		local buttonWidth = tooltip.CookiesButton:GetTextWidth();
+		local buttonWidth = max(tooltip.CacheButton:GetTextWidth(), tooltip.CookiesButton:GetTextWidth());
 		buttonWidth = buttonWidth + 20; --add button padding
 		buttonWidth = max(buttonWidth, BROWSER_TOOLTIP_BUTTON_WIDTH);
 		maxWidth = max(buttonWidth, maxWidth);
 		maxWidth = maxWidth + 20; --add tooltip padding
+		tooltip.CacheButton:SetWidth(buttonWidth);
 		tooltip.CookiesButton:SetWidth(buttonWidth);
 		tooltip:SetWidth(maxWidth);
 		hasResized = true;

@@ -2,6 +2,7 @@
 CommunitiesUtil = {};
 
 function CommunitiesUtil.GetMemberRGB(memberInfo)
+	--[[
 	if memberInfo.classID then
 		local classInfo = C_CreatureInfo.GetClassInfo(memberInfo.classID);
 		if classInfo then
@@ -9,20 +10,17 @@ function CommunitiesUtil.GetMemberRGB(memberInfo)
 			return classColor.r, classColor.g, classColor.b;
 		end
 	end
+	--]]
 	
 	return BATTLENET_FONT_COLOR:GetRGB();
 end
 
 function CommunitiesUtil.SortClubs(clubs)
 	table.sort(clubs, function(lhsClub, rhsClub)
-		if lhsClub.clubType == Enum.ClubType.Guild or rhsClub.clubType == Enum.ClubType.Guild then
-			return lhsClub.clubType == Enum.ClubType.Guild;
-		elseif lhsClub.favoriteTimeStamp ~= nil and rhsClub.favoriteTimeStamp ~= nil then
+		if lhsClub.favoriteTimeStamp ~= nil and rhsClub.favoriteTimeStamp ~= nil then
 			return lhsClub.favoriteTimeStamp < rhsClub.favoriteTimeStamp;
 		elseif lhsClub.favoriteTimeStamp ~= nil or rhsClub.favoriteTimeStamp ~= nil then
 			return lhsClub.favoriteTimeStamp ~= nil;
-		elseif lhsClub.clubType ~= rhsClub.clubType then
-			return lhsClub.clubType == Enum.ClubType.Character;
 		elseif lhsClub.joinTime ~= nil and rhsClub.joinTime ~= nil then
 			return lhsClub.joinTime > rhsClub.joinTime;
 		else
@@ -32,10 +30,8 @@ function CommunitiesUtil.SortClubs(clubs)
 end
 
 local STREAM_TYPE_SORT_ORDER = {
-	[Enum.ClubStreamType.Guild] = 1,
-	[Enum.ClubStreamType.General] = 2,
-	[Enum.ClubStreamType.Officer] = 3,
-	[Enum.ClubStreamType.Other] = 4,
+	[Enum.ClubStreamType.General] = 1,
+	[Enum.ClubStreamType.Other] = 2,
 };
 
 local function CompareStreams(lhsStream, rhsStream)
@@ -52,11 +48,10 @@ end
 
 local PRESENCE_SORT_ORDER = {
 	[Enum.ClubMemberPresence.Online] = 1,
-	[Enum.ClubMemberPresence.OnlineMobile] = 2,
-	[Enum.ClubMemberPresence.Away] = 3,
-	[Enum.ClubMemberPresence.Busy] = 4,
-	[Enum.ClubMemberPresence.Offline] = 5,
-	[Enum.ClubMemberPresence.Unknown] = 6,
+	[Enum.ClubMemberPresence.Away] = 2,
+	[Enum.ClubMemberPresence.Busy] = 3,
+	[Enum.ClubMemberPresence.Offline] = 4,
+	[Enum.ClubMemberPresence.Unknown] = 5,
 };
 
 local function CompareMembers(lhsMemberInfo, rhsMemberInfo)
@@ -77,7 +72,7 @@ end
 
 local function GenerateCompareMemberLambda(clubId)
 	local clubInfo = clubId and C_Club.GetClubInfo(clubId);
-	if clubInfo and clubInfo.clubType == Enum.ClubType.BattleNet then
+	if clubInfo then
 		local function CompareBNetMembers(lhsMemberInfo, rhsMemberInfo)
 			if lhsMemberInfo.presence ~= rhsMemberInfo.presence then
 				return PRESENCE_SORT_ORDER[lhsMemberInfo.presence] < PRESENCE_SORT_ORDER[rhsMemberInfo.presence];
@@ -242,114 +237,17 @@ function CommunitiesUtil.OpenInviteDialog(clubId, streamId)
 	end
 	
 	local privileges = C_Club.GetClubPrivileges(clubId);
-	if clubInfo.clubType == Enum.ClubType.Guild then
-		if(ClubFinderDoesSelectedClubHaveActiveListing(clubId) and C_ClubFinder.IsEnabled()) then 
-			StaticPopup_Show("ADD_GUILDMEMBER_WITH_FINDER_LINK", nil, nil, {clubId = clubId});
-		else 
-			StaticPopup_Show("ADD_GUILDMEMBER");
-		end 
-	elseif privileges.canCreateTicket then
+	if privileges.canCreateTicket then
 		StaticPopup_Show("INVITE_COMMUNITY_MEMBER_WITH_INVITE_LINK", nil, nil, { clubId = clubId, streamId = streamId, });
 	else
 		StaticPopup_Show("INVITE_COMMUNITY_MEMBER", nil, nil, { clubId = clubId, streamId = streamId, });
 	end
 end
 
-function CommunitiesUtil.FindCommunityAndStreamByName(communityName, streamName)
-	local communityID, streamID;
-	if communityName then
-		communityName = string.lower(communityName);
-		local clubs = C_Club.GetSubscribedClubs();
-		if clubs then
-			for _, club in ipairs(clubs) do
-				if string.lower(club.name) == communityName then
-					communityID = club.clubId;
-					break;
-				end
-			end
-
-			if communityID then
-				local streams = C_Club.GetStreams(communityID);
-				if streams then
-					if streamName then
-						streamName = string.lower(streamName);
-						for _, stream in ipairs(streams) do
-							if streamName == string.lower(stream.name) then
-								streamID = stream.streamId;
-								break;
-							end
-						end
-					else
-						for _, stream in ipairs(streams) do
-							if stream.streamType == Enum.ClubStreamType.General then
-								streamID = stream.streamId;
-								break;
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-	return communityID, streamID;
+function CommunitiesUtil.IsInCommunity()
+	return next(C_Club.GetSubscribedClubs()) ~= nil;
 end
 
-function CommunitiesUtil.FindGuildStreamByType(clubStreamType)
-	if clubStreamType ~= Enum.ClubStreamType.Guild and clubStreamType ~= Enum.ClubStreamType.Officer then
-		return;
-	end
-
-	local communityID, streamID;
-	communityID = C_Club.GetGuildClubId();
-	if communityID then
-		local streams = C_Club.GetStreams(communityID);
-		if streams then
-			for _, stream in ipairs(streams) do
-				if stream.streamType == clubStreamType then
-					streamID = stream.streamId;
-					break;
-				end
-			end
-		end
-	end
-	return communityID, streamID;
-end
-
-function CommunitiesUtil.GetRoleSpecClassLine(classID, specID)
-	local className, classTag = GetClassInfo(classID);
-	local color = CreateColor(GetClassColor(classTag));
-
-	local _, specName, _, _, role = GetSpecializationInfoForSpecID(specID);
-	local texture;
-	if (role == "TANK") then
-		texture = CreateAtlasMarkup("roleicon-tiny-tank");
-	elseif (role == "DAMAGER") then
-		texture = CreateAtlasMarkup("roleicon-tiny-dps");
-	elseif (role == "HEALER") then
-		texture = CreateAtlasMarkup("roleicon-tiny-healer");
-	end
-
-	return color:WrapTextInColorCode(CLUB_FINDER_LOOKING_FOR_CLASS_SPEC_WITH_ROLE:format(texture, specName, className));
-end
-
-function CommunitiesUtil.AddLookingForLines(tooltip, recruitingSpecIds, recruitingSpecIdMap, playerSpecs)
-	GameTooltip_AddNormalLine(GameTooltip, CLUB_FINDER_LOOKING_FOR);
-	
-	local isRecruitingAllSpecs = #recruitingSpecIds == 0 or #recruitingSpecIds == CLUB_FINDER_MAX_NUM_SPECIALIZATIONS;
-	if (isRecruitingAllSpecs) then 
-		GameTooltip_AddColoredLine(GameTooltip, CLUB_FINDER_RECRUITING_ALL_SPECS, HIGHLIGHT_FONT_COLOR);
-	else
-		local isRecruitingPlayerSpec = false;
-		local classDisplayName, classTag, classID = UnitClass("player");
-		for _, playerSpecID in ipairs(playerSpecs) do 
-			if (recruitingSpecIdMap[playerSpecID]) then
-				GameTooltip_AddNormalLine(GameTooltip, CommunitiesUtil.GetRoleSpecClassLine(classID, playerSpecID));
-				isRecruitingPlayerSpec = true;
-			end
-		end
-
-		if (not isRecruitingPlayerSpec) then 
-			GameTooltip_AddColoredLine(GameTooltip, CLUB_FINDER_APPLICANT_LIST_NO_MATCHING_SPECS, RED_FONT_COLOR); 
-		end
-	end
+function CommunitiesUtil.HasCommunityInvite()
+	return next(C_Club.GetInvitationsForSelf()) ~= nil;
 end

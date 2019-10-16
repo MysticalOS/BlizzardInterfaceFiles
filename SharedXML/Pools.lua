@@ -20,7 +20,23 @@ if tbl then
 	Import("pairs");
 	Import("ipairs");
 	Import("next");
+	Import("select");
 	Import("CreateFrame");
+	
+	function Mixin(object, ...)
+		for i = 1, select("#", ...) do
+			local mixin = select(i, ...);
+			for k, v in pairs(mixin) do
+				object[k] = v;
+			end
+		end
+
+		return object;
+	end
+
+	function CreateFromMixins(...)
+		return Mixin({}, ...)
+	end
 end
 ----------------
 
@@ -109,16 +125,8 @@ local function FramePoolFactory(framePool)
 	return CreateFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
 end
 
-local function ForbiddenFramePoolFactory(framePool)
-	return CreateForbiddenFrame(framePool.frameType, nil, framePool.parent, framePool.frameTemplate);
-end
-
-function FramePoolMixin:OnLoad(frameType, parent, frameTemplate, resetterFunc, forbidden)
-	if forbidden then
-		ObjectPoolMixin.OnLoad(self, ForbiddenFramePoolFactory, resetterFunc);
-	else
-		ObjectPoolMixin.OnLoad(self, FramePoolFactory, resetterFunc);
-	end
+function FramePoolMixin:OnLoad(frameType, parent, frameTemplate, resetterFunc)
+	ObjectPoolMixin.OnLoad(self, FramePoolFactory, resetterFunc);
 	self.frameType = frameType;
 	self.parent = parent;
 	self.frameTemplate = frameTemplate;
@@ -137,9 +145,9 @@ function FramePool_HideAndClearAnchors(framePool, frame)
 	frame:ClearAllPoints();
 end
 
-function CreateFramePool(frameType, parent, frameTemplate, resetterFunc, forbidden)
+function CreateFramePool(frameType, parent, frameTemplate, resetterFunc)
 	local framePool = CreateFromMixins(FramePoolMixin);
-	framePool:OnLoad(frameType, parent, frameTemplate, resetterFunc or FramePool_HideAndClearAnchors, forbidden);
+	framePool:OnLoad(frameType, parent, frameTemplate, resetterFunc or FramePool_HideAndClearAnchors);
 	return framePool;
 end
 
@@ -213,52 +221,36 @@ function CreateActorPool(parent, actorTemplate, resetterFunc)
 	return actorPool;
 end
 
-FramePoolCollectionMixin = {};
+PoolCollection = {};
 
-function CreateFramePoolCollection()
-	local poolCollection = CreateFromMixins(FramePoolCollectionMixin);
+function CreatePoolCollection()
+	local poolCollection = CreateFromMixins(PoolCollection);
 	poolCollection:OnLoad();
 	return poolCollection;
 end
 
-function FramePoolCollectionMixin:OnLoad()
+function PoolCollection:OnLoad()
 	self.pools = {};
 end
 
-function FramePoolCollectionMixin:GetNumActive()
-	local numTotalActive = 0;
-	for _, pool in pairs(self.pools) do
-		numTotalActive = numTotalActive + pool:GetNumActive();
-	end
-	return numTotalActive;
-end
-
-function FramePoolCollectionMixin:GetOrCreatePool(frameType, parent, template, resetterFunc, forbidden)
-	local pool = self:GetPool(template);
-	if not pool then
-		pool = self:CreatePool(frameType, parent, template, resetterFunc, forbidden);
-	end
-	return pool;
-end
-
-function FramePoolCollectionMixin:CreatePool(frameType, parent, template, resetterFunc, forbidden)
+function PoolCollection:CreatePool(frameType, parent, template, resetterFunc)
 	assert(self:GetPool(template) == nil);
-	local pool = CreateFramePool(frameType, parent, template, resetterFunc, forbidden);
+	local pool = CreateFramePool(frameType, parent, template, resetterFunc);
 	self.pools[template] = pool;
 	return pool;
 end
 
-function FramePoolCollectionMixin:GetPool(template)
+function PoolCollection:GetPool(template)
 	return self.pools[template];
 end
 
-function FramePoolCollectionMixin:Acquire(template)
+function PoolCollection:Acquire(template)
 	local pool = self:GetPool(template);
 	assert(pool);
 	return pool:Acquire();
 end
 
-function FramePoolCollectionMixin:Release(object)
+function PoolCollection:Release(object)
 	for _, pool in pairs(self.pools) do
 		if pool:Release(object) then
 			-- Found it! Just return
@@ -270,20 +262,20 @@ function FramePoolCollectionMixin:Release(object)
 	assert(false);
 end
 
-function FramePoolCollectionMixin:ReleaseAllByTemplate(template)
+function PoolCollection:ReleaseAllByTemplate(template)
 	local pool = self:GetPool(template);
 	if pool then
 		pool:ReleaseAll();
 	end
 end
 
-function FramePoolCollectionMixin:ReleaseAll()
+function PoolCollection:ReleaseAll()
 	for key, pool in pairs(self.pools) do
 		pool:ReleaseAll();
 	end
 end
 
-function FramePoolCollectionMixin:EnumerateActiveByTemplate(template)
+function PoolCollection:EnumerateActiveByTemplate(template)
 	local pool = self:GetPool(template);
 	if pool then
 		return pool:EnumerateActive();
@@ -292,7 +284,7 @@ function FramePoolCollectionMixin:EnumerateActiveByTemplate(template)
 	return nop;
 end
 
-function FramePoolCollectionMixin:EnumerateActive()
+function PoolCollection:EnumerateActive()
 	local currentPoolKey, currentPool = next(self.pools, nil);
 	local currentObject = nil;
 	return function()
@@ -312,40 +304,10 @@ function FramePoolCollectionMixin:EnumerateActive()
 	end, nil;
 end
 
-FixedSizeFramePoolCollectionMixin = CreateFromMixins(FramePoolCollectionMixin);
-
-function CreateFixedSizeFramePoolCollection()
-	local poolCollection = CreateFromMixins(FixedSizeFramePoolCollectionMixin);
-	poolCollection:OnLoad();
-	return poolCollection;
-end
-
-function FixedSizeFramePoolCollectionMixin:OnLoad()
-	FramePoolCollectionMixin.OnLoad(self);
-	self.sizes = {};
-end
-
-function FixedSizeFramePoolCollectionMixin:CreatePool(frameType, parent, template, resetterFunc, forbidden, maxPoolSize, preallocate)
-	local pool = FramePoolCollectionMixin.CreatePool(self, frameType, parent, template, resetterFunc, forbidden);
-
-	if preallocate then
-		for i = 1, maxPoolSize do
-			pool:Acquire();
-		end
-		pool:ReleaseAll();
+function PoolCollection:GetNumActive()
+	local count = 0;
+	for _, pool in pairs(self.pools) do
+		count = count + pool:GetNumActive();
 	end
-
-	self.sizes[template] = maxPoolSize;
-
-	return pool;
-end
-
-function FixedSizeFramePoolCollectionMixin:Acquire(template)	
-	local pool = self:GetPool(template);
-	assert(pool);
-
-	if pool:GetNumActive() < self.sizes[template] then
-		return pool:Acquire();
-	end
-	return nil;
+	return count;
 end

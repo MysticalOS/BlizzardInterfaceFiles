@@ -18,6 +18,10 @@ GLUE_SECONDARY_SCREENS = {
 
 ACCOUNT_SUSPENDED_ERROR_CODE = 53;
 
+-- Mirror of the same variables in Blizzard_StoreUISecure.lua and UIParent.lua
+local WOW_GAMES_CATEGORY_ID = 33; 
+WOW_GAME_TIME_CATEGORY_ID = 37;
+
 local function OnDisplaySizeChanged(self)
 	local width = GetScreenWidth();
 	local height = GetScreenHeight();
@@ -69,7 +73,7 @@ function GlueParent_OnEvent(self, event, ...)
 		GlueParent_UpdateDialogs();
 		GlueParent_CheckCinematic();
 		if ( AccountLogin:IsVisible() ) then
-			SetExpansionLogo(AccountLogin.UI.GameLogo, GetClientDisplayExpansionLevel());
+			SetClassicLogo(AccountLogin.UI.GameLogo, GetClientDisplayExpansionLevel());
 		end
 	elseif ( event == "LOGIN_STATE_CHANGED" ) then
 		GlueParent_EnsureValidScreen();
@@ -149,93 +153,110 @@ function GlueParent_UpdateDialogs()
 			GlueDialog_Show("CANCEL", LOGIN_STATE_CONNECTING);
 		end
 	elseif ( auroraState == LE_AURORA_STATE_NONE and C_Login.GetLastError() ) then
-		local errorCategory, errorID, localizedString, debugString, errorCodeString = C_Login.GetLastError();
+		if ( not CHARACTER_SELECT_KICKED_FROM_CONVERT ) then
+			local errorCategory, errorID, localizedString, debugString, errorCodeString = C_Login.GetLastError();
 
-		local isHTML = false;
-		local hasURL = false;
-		local useGenericURL = false;
+			local isHTML = false;
+			local hasURL = false;
+			local useGenericURL = false;
 
-		--If we didn't get a string from C, look one up in GlueStrings as HTML
-		if ( not localizedString ) then
-			local tag = string.format("%s_ERROR_%d_HTML", errorCategory, errorID);
-			localizedString = _G[tag];
-			if ( localizedString ) then
-				isHTML = true;
+			--If we didn't get a string from C, look one up in GlueStrings as HTML
+			if ( not localizedString ) then
+				local tag = string.format("%s_ERROR_%d_HTML", errorCategory, errorID);
+				localizedString = _G[tag];
+				if ( localizedString ) then
+					isHTML = true;
+				end
 			end
-		end
 
-		--If we didn't get a string from C, look one up in GlueStrings
-		if ( not localizedString ) then
-			local tag = string.format("%s_ERROR_%d", errorCategory, errorID);
-			localizedString = _G[tag];
-		end
+			--If we didn't get a string from C, look one up in GlueStrings
+			if ( not localizedString ) then
+				local tag = string.format("%s_ERROR_%d", errorCategory, errorID);
+				localizedString = _G[tag];
+			end
 
-		--If we still don't have one, just display a generic error with the ID
-		if ( not localizedString ) then
-			localizedString = _G[errorCategory.."_ERROR_OTHER"];
-			useGenericURL = true;
-		end
+			--If we still don't have one, just display a generic error with the ID
+			if ( not localizedString ) then
+				localizedString = _G[errorCategory.."_ERROR_OTHER"];
+				useGenericURL = true;
+			end
 
-		--If we got a debug message, stick it on the end of the errorCodeString
-		if ( debugString ) then
-			errorCodeString = errorCodeString.." [[DBG "..debugString.."]]";
-		end
+			--If we got a debug message, stick it on the end of the errorCodeString
+			if ( debugString ) then
+				errorCodeString = errorCodeString.." [[DBG "..debugString.."]]";
+			end
 
-		--See if we want a custom URL
-		local urlTag = string.format("%s_ERROR_%d_URL", errorCategory, errorID);
-		if ( _G[urlTag] ) then
-			hasURL = true;
-		end
+			--See if we want a custom URL
+			local urlTag = string.format("%s_ERROR_%d_URL", errorCategory, errorID);
+			if ( _G[urlTag] ) then
+				hasURL = true;
+			end
 
-		if ( errorCategory == "BNET" and errorID == ACCOUNT_SUSPENDED_ERROR_CODE ) then
-			local remaining = C_Login.GetAccountSuspensionRemainingTime();
-			if (remaining) then
-				local days = floor(remaining / 86400);
-				local hours = floor((remaining / 3600) - (days * 24));
-				local minutes = floor((remaining / 60) - (days * 1440) - (hours * 60));
-				localizedString = localizedString:format(" "..ACCOUNT_SUSPENSION_EXPIRATION:format(days, hours, minutes));
+			if ( errorCategory == "BNET" and errorID == ACCOUNT_SUSPENDED_ERROR_CODE ) then
+				local remaining = C_Login.GetAccountSuspensionRemainingTime();
+				if (remaining) then
+					local days = floor(remaining / 86400);
+					local hours = floor((remaining / 3600) - (days * 24));
+					local minutes = floor((remaining / 60) - (days * 1440) - (hours * 60));
+					localizedString = localizedString:format(" "..ACCOUNT_SUSPENSION_EXPIRATION:format(days, hours, minutes));
+				else
+					localizedString = localizedString:format("");
+				end
+			end
+
+			--Append the errorCodeString
+			if ( isHTML ) then
+				--Pretty hacky...
+				local endOfHTML = "</p></body></html>";
+				localizedString = string.gsub(localizedString, endOfHTML, string.format(" (%s)%s", errorCodeString, endOfHTML));
 			else
-				localizedString = localizedString:format("");
+				localizedString = string.format("%s (%s)", localizedString, errorCodeString);
+			end
+
+			if ( isHTML ) then
+				GlueDialog_Show("OKAY_HTML", localizedString);
+			elseif ( hasURL ) then
+				GlueDialog_Show("OKAY_WITH_URL", localizedString, urlTag);
+			elseif ( useGenericURL ) then
+				GlueDialog_Show("OKAY_WITH_GENERIC_URL", localizedString);
+			else
+				GlueDialog_Show("OKAY", localizedString);
 			end
 		end
 
-		--Append the errorCodeString
-		if ( isHTML ) then
-			--Pretty hacky...
-			local endOfHTML = "</p></body></html>";
-			localizedString = string.gsub(localizedString, endOfHTML, string.format(" (%s)%s", errorCodeString, endOfHTML));
-		else
-			localizedString = string.format("%s (%s)", localizedString, errorCodeString);
-		end
-
-		if ( isHTML ) then
-			GlueDialog_Show("OKAY_HTML", localizedString);
-		elseif ( hasURL ) then
-			GlueDialog_Show("OKAY_WITH_URL", localizedString, urlTag);
-		elseif ( useGenericURL ) then
-			GlueDialog_Show("OKAY_WITH_GENERIC_URL", localizedString);
-		else
-			GlueDialog_Show("OKAY", localizedString);
-		end
-
+		CHARACTER_SELECT_KICKED_FROM_CONVERT = false;
 		C_Login.ClearLastError();
 	elseif (  waitingForRealmList ) then
 		GlueDialog_Show("REALM_LIST_IN_PROGRESS");
 	elseif ( wowConnectionState == LE_WOW_CONNECTION_STATE_CONNECTING ) then
 		GlueDialog_Show("CANCEL", GAME_SERVER_LOGIN);
 	elseif ( wowConnectionState == LE_WOW_CONNECTION_STATE_IN_QUEUE ) then
+		local serverName, pvp, rp, down = GetServerName();
 		local waitPosition, waitMinutes, hasFCM = C_Login.GetWaitQueueInfo();
 
-		if ( hasFCM ) then
-			GlueDialog_Show("QUEUED_WITH_FCM", _G["QUEUE_FCM"]);
-		elseif ( waitMinutes == 0 ) then
-			local queueString = string.format(_G["QUEUE_TIME_LEFT_UNKNOWN"], waitPosition);
-			GlueDialog_Show("QUEUED_NORMAL", queueString);
-		elseif (waitMinutes == 1) then
-			local queueString = string.format(_G["QUEUE_TIME_LEFT_SECONDS"], waitPosition);
-			GlueDialog_Show("QUEUED_NORMAL", queueString);
+		local queueString;
+		if (serverName) then
+			if ( waitMinutes == 0 ) then
+				queueString = string.format(_G["QUEUE_NAME_TIME_LEFT_UNKNOWN"], serverName, waitPosition);
+			elseif ( waitMinutes == 1 ) then
+				queueString = string.format(_G["QUEUE_NAME_TIME_LEFT_SECONDS"], serverName, waitPosition);
+			else
+				queueString = string.format(_G["QUEUE_NAME_TIME_LEFT"], serverName, waitPosition, waitMinutes);
+			end
 		else
-			local queueString = string.format(_G["QUEUE_TIME_LEFT"], waitPosition, waitMinutes);
+			if ( waitMinutes == 0 ) then
+				queueString = string.format(_G["QUEUE_TIME_LEFT_UNKNOWN"], waitPosition);
+			elseif ( waitMinutes == 1 ) then
+				queueString = string.format(_G["QUEUE_TIME_LEFT_SECONDS"], waitPosition);
+			else
+				queueString = string.format(_G["QUEUE_TIME_LEFT"], waitPosition, waitMinutes);
+			end
+		end
+
+		if ( hasFCM ) then
+			queueString = queueString .. "\n\n" .. _G["QUEUE_FCM"];
+			GlueDialog_Show("QUEUED_WITH_FCM", queueString);
+		else
 			GlueDialog_Show("QUEUED_NORMAL", queueString);
 		end
 	else
@@ -422,6 +443,7 @@ local glueScreenTags =
 		["PANDAREN"] = "PANDARENCHARACTERSELECT",
 	},
 
+--[[
 	["charcreate"] =
 	{
 		-- Classes
@@ -436,6 +458,7 @@ local glueScreenTags =
 		["ALLIANCE"] = true,
 		["NEUTRAL"] = true,
 	},
+--]]
 
 	["default"] =
 	{
@@ -462,8 +485,6 @@ local glueScreenTags =
 		["HIGHMOUNTAINTAUREN"] = true,
 		["DARKIRONDWARF"] = true,
 		["MAGHARORC"] = true,
-		["ZANDALARITROLL"] = true,
-		["KULTIRAN"] = true,
 	},
 };
 
@@ -508,7 +529,7 @@ local function UpdateGlueTag()
 			class = classInfo.fileName;
 		end
 		local raceID = C_CharacterCreation.GetSelectedRace();
-		race = C_CharacterCreation.GetNameForRace(raceID);
+		race = select(2, C_CharacterCreation.GetNameForRace(raceID));
 		faction = C_CharacterCreation.GetFactionForRace(raceID);
 	end
 
@@ -613,6 +634,13 @@ function SetBackgroundModel(model, path)
 
 	ResetLighting(model);
 	UpdateLighting(model);
+
+	-- In 1.12, the Character Create screen shows fog but the Character Select screen doesn't.
+	-- (CCharacterSelection::SetBackgroundModel() sets the lighing back to GenericLightingCallback)
+	-- Showing fog on Character Select looks bad when the character is a ghost.
+	if ( model ~= CharacterCreate ) then
+		model:ClearFog();
+	end
 end
 
 -- =============================================================
@@ -669,6 +697,7 @@ function GetDisplayedExpansionLogo(expansionLevel)
 	return nil;
 end
 
+-- For Classic, most places should call "SetClassicLogo" instead.
 function SetExpansionLogo(texture, expansionLevel)
 	local logo = GetDisplayedExpansionLogo(expansionLevel);
 	if logo then
@@ -677,6 +706,14 @@ function SetExpansionLogo(texture, expansionLevel)
 	else
 		texture:Hide();
 	end
+end
+
+classicLogo = 'Interface\\Glues\\Common\\WOW_Classic-LogoHR';
+classicLogoTexCoords = { 0.125, 0.875, 0.3125, 0.6875 };
+function SetClassicLogo(texture)
+	texture:SetTexture(classicLogo);
+	texture:SetTexCoord(classicLogoTexCoords[1], classicLogoTexCoords[2], classicLogoTexCoords[3], classicLogoTexCoords[4]);
+	texture:Show();
 end
 
 function UpgradeAccount()

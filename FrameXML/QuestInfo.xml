@@ -45,7 +45,7 @@
 			</OnUpdate>
 		</Scripts>
 	</Button>
-
+	
 	<Button name="SmallQuestRewardItemButtonTemplate" inherits="SmallItemButtonTemplate, QuestInfoRewardItemCodeTemplate" virtual="true">
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="1">
@@ -66,7 +66,7 @@
 			</Layer>
 		</Layers>
 	</Button>
-
+	
 	<Button name="LargeQuestRewardItemButtonTemplate" inherits="LargeItemButtonTemplate, QuestInfoRewardItemCodeTemplate" virtual="true">
 		<Layers>
 			<Layer level="OVERLAY" textureSubLevel="1">
@@ -87,7 +87,7 @@
 			</Layer>
 		</Layers>
 	</Button>
-
+	
 	<Button name="QuestInfoRewardFollowerCodeTemplate" virtual="true">
 		<Scripts>
 			<OnEnter>
@@ -198,16 +198,6 @@
 		 </Frames>
 	 </Button>
 
-	 <Button name="QuestInfoHonorFrameScriptTemplate" virtual="true">
-		 <Scripts>
-			 <OnEnter>
-				 GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-				 GameTooltip:SetCurrencyByID(Constant.Currency.Honor);
-			 </OnEnter>
-			 <OnLeave function="GameTooltip_Hide" />
-		 </Scripts>
-	 </Button>
-
 	<Frame name="QuestInfoObjectivesFrame" hidden="true">
 		<Size x="285" y="10"/>
 		<Anchors>
@@ -307,13 +297,10 @@
 				</FontString>
 				<FontString parentKey="ItemReceiveText" inherits="QuestFont" hidden="true" justifyH="LEFT" />
 				<FontString parentKey="PlayerTitleText" inherits="QuestFont" text="REWARD_TITLE" hidden="true" justifyH="LEFT" />
-				<FontString parentKey="QuestSessionBonusReward" inherits="QuestFont" text="QUEST_SESSION_BONUS_LOOT_REWARD_FRAME_TITLE" hidden="true" justifyH="LEFT">
-					<Size x="270" y="0"/>
-				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button parentKey="HonorFrame" inherits="LargeItemButtonTemplate, QuestInfoHonorFrameScriptTemplate" hidden="true"/>
+			<Button parentKey="HonorFrame" inherits="LargeItemButtonTemplate" hidden="true"/>
 			<Button parentArray="RewardButtons" name="$parentQuestInfoItem1" inherits="LargeQuestRewardItemButtonTemplate" hidden="true"/>
 			<Frame parentKey="MoneyFrame" name="QuestInfoMoneyFrame" inherits="MoneyFrameTemplate">
 				<Anchors>
@@ -492,9 +479,6 @@
 				</FontString>
 				<FontString parentKey="ItemReceiveText" inherits="QuestMapRewardsFont" hidden="true" justifyH="LEFT"/>
 				<FontString parentKey="PlayerTitleText" inherits="QuestMapRewardsFont" text="REWARD_TITLE" hidden="true" justifyH="LEFT"/>
-				<FontString parentKey="QuestSessionBonusReward" inherits="QuestMapRewardsFont" text="QUEST_SESSION_BONUS_LOOT_REWARD_FRAME_TITLE" hidden="true" justifyH="LEFT">
-					<Size x="270" y="0"/>
-				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
@@ -507,7 +491,7 @@
 			</Frame>
 			<Button parentArray="RewardButtons" name="$parentQuestInfoItem1" inherits="SmallQuestRewardItemButtonTemplate" hidden="true"/>
 			<Button parentKey="XPFrame" inherits="SmallItemButtonTemplate" hidden="true"/>
-			<Button parentKey="HonorFrame" inherits="SmallItemButtonTemplate, QuestInfoHonorFrameScriptTemplate" hidden="true"/>
+            <Button parentKey="HonorFrame" inherits="SmallItemButtonTemplate" hidden="true"/>
 			<Button parentKey="ArtifactXPFrame" inherits="SmallItemButtonTemplate" hidden="true">
 				<Layers>
 					<Layer level="BORDER">
@@ -593,14 +577,17 @@
 				<FontString name="QuestInfoTitleHeader" inherits="QuestTitleFont" justifyH="LEFT">
 					<Size x="285" y="0"/>
 				</FontString>
+				<FontString name="QuestInfoDescriptionText" inherits="QuestFont" justifyH="LEFT">
+					<Size x="270" y="0"/>
+				</FontString>
 				<FontString name="QuestInfoQuestType" inherits="QuestFont" justifyH="LEFT">
 					<Size x="285" y="0"/>
 				</FontString>
 				<FontString name="QuestInfoObjectivesText" inherits="QuestFont" justifyH="LEFT">
-					<Size x="285" y="0"/>
+					<Size x="270" y="0"/>
 				</FontString>
 				<FontString name="QuestInfoRewardText" inherits="QuestFont" justifyH="LEFT">
-					<Size x="285" y="0"/>
+					<Size x="275" y="0"/>
 				</FontString>
 				<FontString name="QuestInfoRequiredMoneyText" inherits="QuestFontNormalSmall" text="REQUIRED_MONEY" />
 				<FontString name="QuestInfoGroupSize" inherits="QuestFont" />
@@ -609,9 +596,6 @@
 					<Size x="285" y="0"/>
 				</FontString>
 				<FontString name="QuestInfoObjectivesHeader" inherits="QuestTitleFont" text="QUEST_OBJECTIVES"  justifyH="LEFT">
-					<Size x="285" y="0"/>
-				</FontString>
-				<FontString name="QuestInfoDescriptionText" inherits="QuestFont" justifyH="LEFT">
 					<Size x="285" y="0"/>
 				</FontString>
 			</Layer>

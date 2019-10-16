@@ -10,7 +10,6 @@ end
 
 Import("IsOnGlueScreen");
 Import("GetPhysicalScreenSize");
-Import("GetScreenDPIScale");
 Import("ConvertPixelsToUI");
 
 if ( tbl.IsOnGlueScreen() ) then
@@ -31,7 +30,8 @@ function SimpleCheckoutMixin:OnEvent(event, ...)
 	if (event == "STORE_OPEN_SIMPLE_CHECKOUT") then
 		local checkoutID = ...;
 		if (StoreFrame:IsShown()) then
-			self:CalculateDesiredSize();
+			self.requestedWidth = 800;
+			self.requestedHeight = 600;
 			self:RecalculateSize();
 			self:Show();
 			if (self:OpenCheckout(checkoutID)) then
@@ -43,7 +43,6 @@ function SimpleCheckoutMixin:OnEvent(event, ...)
 			self:CancelOpenCheckout();
 		end
 	elseif (event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED") then
-		self:CalculateDesiredSize();
 		self:RecalculateSize();
 	elseif (event == "SUBSCRIPTION_CHANGED_KICK_IMMINENT") then
 		if (IsOnGlueScreen()) then
@@ -74,49 +73,11 @@ function SimpleCheckoutMixin:OnHide()
 end
 
 function SimpleCheckoutMixin:OnRequestNewSize(newWidth, newHeight)
-	-- newWidth and newHeight are in pixels
-	self.desiredWidth = newWidth;
-	self.desiredHeight = newHeight;
+	-- newWidth and newHeight are in pixels; we need to convert to UI coordinates
+	self.requestedWidth = newWidth;
+	self.requestedHeight = newHeight;
 
 	self:RecalculateSize();
-end
-
-function SimpleCheckoutMixin:OnExternalLink()
-	self:OpenExternalLink();
-end
-
-do
-	local baseWidth = 860;
-	local baseHeight = 645;
-
-	local NormalizeScaleMultiplier = function(multiplier)
-		if multiplier > 2.4 then
-			return 3;
-		elseif multiplier > 1.4 then
-			return 2;
-		else 
-			return 1;
-		end
-	end
-
-	function SimpleCheckoutMixin:CalculateDesiredSize()
-		local physicalWidth, physicalHeight = GetPhysicalScreenSize();
-
-		local scaleMultiplier = NormalizeScaleMultiplier(GetScreenDPIScale());
-
-		local desiredWidth = baseWidth * scaleMultiplier;
-		local desiredHeight = baseHeight * scaleMultiplier;
-	
-		while scaleMultiplier >= 2 and (desiredWidth > physicalWidth * 0.9 or desiredHeight > physicalHeight * 0.9) do
-			scaleMultiplier = scaleMultiplier - 1;
-
-			desiredWidth = baseWidth * scaleMultiplier;
-			desiredHeight = baseHeight * scaleMultiplier;
-		end
-
-		self.desiredWidth = desiredWidth;
-		self.desiredHeight = desiredHeight;
-	end
 end
 
 local function SetOffsets(top, left, bottom, right, size, topOffset, leftOffset, bottomOffset, rightOffset)
@@ -143,12 +104,12 @@ function SimpleCheckoutMixin:RecalculateSize()
 	local pixelSize = ConvertPixelsToUI(1, self:GetEffectiveScale());
 
 	-- Convert to ui coordinates, clamping to 90% of window size
-	local desiredWidth = Clamp(self.desiredWidth * pixelSize, 1, physicalWidth * pixelSize * 0.9);
-	local desiredHeight = Clamp(self.desiredHeight * pixelSize, 1, physicalHeight * pixelSize * 0.9);
+	local requestedWidth = Clamp(self.requestedWidth * pixelSize, 1, physicalWidth * pixelSize * 0.9);
+	local requestedHeight = Clamp(self.requestedHeight * pixelSize, 1, physicalHeight * pixelSize * 0.9);
 
 	-- Convert back to pixel coordinates; this will include any clamping done above
-	local uiWidth = desiredWidth / pixelSize;
-	local uiHeight = desiredHeight / pixelSize;
+	local uiWidth = requestedWidth / pixelSize;
+	local uiHeight = requestedHeight / pixelSize;
 
 	-- position frame on a pixel boundary.
 	local left = math.floor((physicalWidth - uiWidth) / 2) * pixelSize;
@@ -156,7 +117,7 @@ function SimpleCheckoutMixin:RecalculateSize()
 
 	self:ClearAllPoints();
 	self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", left, bottom);
-	self:SetSize(desiredWidth, desiredHeight);
+	self:SetSize(requestedWidth, requestedHeight);
 
 	self.CloseButton:SetSize(20 * pixelSize, 20 * pixelSize);
 	self.CloseButton:ClearAllPoints();
@@ -165,3 +126,4 @@ function SimpleCheckoutMixin:RecalculateSize()
 	SetOffsets(self.TopInside, self.LeftInside, self.BottomInside, self.RightInside, pixelSize, -1, 1, 1, -1);
 	SetOffsets(self.TopOutside, self.LeftOutside, self.BottomOutside, self.RightOutside, pixelSize, 0, 0, 0, 0);
 end
+

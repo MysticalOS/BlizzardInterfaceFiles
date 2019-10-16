@@ -39,57 +39,47 @@ CHAT_CONFIG_CHAT_LEFT = {
 		func = function (self, checked) ToggleChatMessageGroup(checked, "OFFICER"); end;
 	},
 	[6] = {
-		type = "GUILD_ACHIEVEMENT",
-		checked = function () return IsListeningForMessageType("GUILD_ACHIEVEMENT"); end;
-		func = function (self, checked) ToggleChatMessageGroup(checked, "GUILD_ACHIEVEMENT"); end;
-	},
-	[7] = {
-		type = "ACHIEVEMENT",
-		checked = function () return IsListeningForMessageType("ACHIEVEMENT"); end;
-		func = function (self, checked) ToggleChatMessageGroup(checked, "ACHIEVEMENT"); end;
-	},
-	[8] = {
 		type = "WHISPER",
 		checked = function () return IsListeningForMessageType("WHISPER"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "WHISPER"); end;
 	},
-	[9] = {
+	[7] = {
 		type = "BN_WHISPER",
 		noClassColor = 1,
 		checked = function () return IsListeningForMessageType("BN_WHISPER"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "BN_WHISPER"); end;
 	},
-	[10] = {
+	[8] = {
 		type = "PARTY",
 		checked = function () return IsListeningForMessageType("PARTY"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "PARTY"); end;
 	},
-	[11] = {
+	[9] = {
 		type = "PARTY_LEADER",
 		checked = function () return IsListeningForMessageType("PARTY_LEADER"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "PARTY_LEADER"); end;
 	},
-	[12] = {
+	[10] = {
 		type = "RAID",
 		checked = function () return IsListeningForMessageType("RAID"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "RAID"); end;
 	},
-	[13] = {
+	[11] = {
 		type = "RAID_LEADER",
 		checked = function () return IsListeningForMessageType("RAID_LEADER"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "RAID_LEADER"); end;
 	},
-	[14] = {
+	[12] = {
 		type = "RAID_WARNING",
 		checked = function () return IsListeningForMessageType("RAID_WARNING"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "RAID_WARNING"); end;
 	},
-	[15] = {
+	[13] = {
 		type = "INSTANCE_CHAT",
 		checked = function () return IsListeningForMessageType("INSTANCE_CHAT"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "INSTANCE_CHAT"); end;
 	},
-	[16] = {
+	[14] = {
 		type = "INSTANCE_CHAT_LEADER",
 		checked = function () return IsListeningForMessageType("INSTANCE_CHAT_LEADER"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "INSTANCE_CHAT_LEADER"); end;
@@ -162,33 +152,27 @@ CHAT_CONFIG_OTHER_COMBAT = {
  		func = function (self, checked) ToggleChatMessageGroup(checked, "LOOT"); end;
  	},
 	[6] = {
- 		text = CURRENCY,
- 		type = "CURRENCY",
- 		checked = function () return IsListeningForMessageType("CURRENCY"); end;
- 		func = function (self, checked) ToggleChatMessageGroup(checked, "CURRENCY"); end;
- 	},
-	[7] = {
  		text = MONEY_LOOT,
  		type = "MONEY",
  		checked = function () return IsListeningForMessageType("MONEY"); end;
  		func = function (self, checked) ToggleChatMessageGroup(checked, "MONEY"); end;
  	},
-	[8] = {
+	[7] = {
  		type = "TRADESKILLS",
  		checked = function () return IsListeningForMessageType("TRADESKILLS"); end;
  		func = function (self, checked) ToggleChatMessageGroup(checked, "TRADESKILLS"); end;
  	},
-	[9] = {
+	[8] = {
  		type = "OPENING",
  		checked = function () return IsListeningForMessageType("OPENING"); end;
  		func = function (self, checked) ToggleChatMessageGroup(checked, "OPENING"); end;
  	},
-	[10] = {
+	[9] = {
  		type = "PET_INFO",
  		checked = function () return IsListeningForMessageType("PET_INFO"); end;
  		func = function (self, checked) ToggleChatMessageGroup(checked, "PET_INFO"); end;
  	},
-	[11] = {
+	[10] = {
  		type = "COMBAT_MISC_INFO",
 		checked = function () return IsListeningForMessageType("COMBAT_MISC_INFO"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "COMBAT_MISC_INFO"); end;
@@ -245,19 +229,10 @@ CHAT_CONFIG_OTHER_SYSTEM = {
 		checked = function () return IsListeningForMessageType("BN_INLINE_TOAST_ALERT"); end;
 		func = function (self, checked) ToggleChatMessageGroup(checked, "BN_INLINE_TOAST_ALERT"); end;
 	},
-	[7] = {
-		type = "PET_BATTLE_COMBAT_LOG",
-		checked = function() return IsListeningForMessageType("PET_BATTLE_COMBAT_LOG"); end;
-		func = function (self, checked) ToggleChatMessageGroup(checked, "PET_BATTLE_COMBAT_LOG"); end;
-	},
-	[8] = {
-		type = "PET_BATTLE_INFO",
-		checked = function() return IsListeningForMessageType("PET_BATTLE_INFO"); end;
-		func = function (self, checked) ToggleChatMessageGroup(checked, "PET_BATTLE_INFO"); end;
-	},
 }
 
 CHAT_CONFIG_CHANNEL_LIST = {};
+CHAT_CONFIG_AVAILABLE_CHANNEL_LIST = {};
 
 -- Combat Options
 COMBAT_CONFIG_MESSAGESOURCES_BY = {
@@ -582,20 +557,6 @@ COMBAT_CONFIG_MESSAGETYPES_RIGHT = {
 				func = function (self, checked) ToggleMessageType(checked, "SPELL_RESURRECT"); end;
 				tooltip = SPELL_RESURRECT_COMBATLOG_TOOLTIP,
 			},
-			[9] = {
-				text = BUILDING_DAMAGE,
-				type = {"SPELL_BUILDING_DAMAGE"};
-				checked = function () return HasMessageType("SPELL_BUILDING_DAMAGE"); end;
-				func = function (self, checked) ToggleMessageType(checked, "SPELL_BUILDING_DAMAGE"); end;
-				tooltip = BUILDING_DAMAGE_COMBATLOG_TOOLTIP,
-			},
-			[10] = {
-				text = BUILDING_HEAL,
-				type = {"SPELL_BUILDING_HEAL"};
-				checked = function () return HasMessageType("SPELL_BUILDING_HEAL"); end;
-				func = function (self, checked) ToggleMessageType(checked, "SPELL_BUILDING_HEAL"); end;
-				tooltip = BUILDING_HEAL_COMBATLOG_TOOLTIP,
-			},
 		}
 	},
 	[2] = {
@@ -654,6 +615,13 @@ COMBAT_CONFIG_MESSAGETYPES_MISC = {
 		func = function (self, checked) ToggleMessageType(checked, "UNIT_DIED", "UNIT_DESTROYED", "UNIT_DISSIPATES"); end;
 		tooltip = DEATHS_COMBATLOG_TOOLTIP,
 	},
+	[5] = {
+		text = PET_LOYALTY,
+		type = {"UNIT_LOYALTY"};
+		checked = function () return HasMessageType("UNIT_LOYALTY"); end;
+		func = function (self, checked) ToggleMessageType(checked, "UNIT_LOYALTY"); end;
+		tooltip = UNIT_LOYALTY_COMBATLOG_TOOLTIP,
+	},
 };
 COMBAT_CONFIG_UNIT_COLORS = {
 	[1] = {
@@ -689,6 +657,7 @@ COMBAT_CONFIG_UNIT_COLORS = {
 function ChatConfigFrame_OnLoad(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD");
 	self:RegisterEvent("CHANNEL_UI_UPDATE");
+	self:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE");
 	ChatConfigCombatSettingsFilters.selectedFilter = 1;
 end
 
@@ -717,9 +686,80 @@ function ChatConfigFrame_OnEvent(self, event, ...)
 		-- Default selections
 		ChatConfigCategory_OnClick(ChatConfigCategoryFrameButton2);
 		ChatConfig_UpdateCombatTabs(1);
-	elseif ( event == "CHANNEL_UI_UPDATE" ) then
-		ChatConfigCategory_UpdateEnabled();
-		ChatConfig_UpdateChatSettings();
+	elseif ( event == "CHANNEL_UI_UPDATE" or event == "CHAT_MSG_CHANNEL_NOTICE" ) then
+		ChatConfigChannelSettings_OnShow();
+	end
+end
+
+-- Like ChatConfig_CreateCheckboxes, but without the checkboxes.
+function ChatConfig_CreateBoxes(frame, boxTable, boxTemplate, title)
+	local boxNameString = frame:GetName().."Box";
+	local boxName, box;
+	local width, height;
+	local padding = 8;
+	local text;
+	local boxFontString;
+	
+	frame.boxTable = boxTable;
+	if ( title ) then
+		_G[frame:GetName().."Title"]:SetText(title);
+	end
+	for index, value in ipairs(boxTable) do
+		--If no box then create it
+		boxName = boxNameString..index;
+		box = _G[boxName];
+		if ( not box ) then
+			box = CreateFrame("Frame", boxName, frame, boxTemplate);
+			box:SetID(index);
+		end
+		if ( not width ) then
+			width = box:GetWidth();
+			height = box:GetHeight();
+		end
+		if ( index > 1 ) then
+			box:SetPoint("TOPLEFT", boxNameString..(index-1), "BOTTOMLEFT", 0, 0);
+		else
+			box:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4);
+		end
+		if ( value.text ) then
+			text = value.text;
+		else
+			text = _G[value.type];
+		end
+		if ( value.buttonText ) then
+			box.Button:SetText(value.buttonText);
+		end
+		if ( value.buttonFunc ) then
+			box.Button:SetScript("OnClick", value.buttonFunc);
+		end
+		box.type = value.type;
+		boxFontString = _G[boxName.."Text"];
+		boxFontString:SetText(text);
+		boxFontString:SetMaxLines(1);
+		if ( value.maxWidth ) then
+			boxFontString:SetWidth(0);
+			if ( boxFontString:GetWidth() > value.maxWidth ) then
+				boxFontString:SetWidth(value.maxWidth);
+			end
+		end
+		box:Show();
+	end
+	
+	for index = #boxTable + 1, MAX_WOW_CHAT_CHANNELS do
+		boxName = boxNameString..index;
+		box = _G[boxName];
+		if box then
+			box:Hide();
+		end
+	end
+	
+	--Set Parent frame dimensions
+	if ( #boxTable > 0 ) then
+		frame:SetWidth(width+padding);
+		frame:SetHeight(#boxTable*height+padding);
+		frame:Show();
+	else
+		frame:Hide();
 	end
 end
 
@@ -787,6 +827,9 @@ function ChatConfig_CreateCheckboxes(frame, checkBoxTable, checkBoxTemplate, tit
 	if ( #checkBoxTable > 0 ) then
 		frame:SetWidth(width+padding);
 		frame:SetHeight(#checkBoxTable*height+padding);
+		frame:Show();
+	else
+		frame:Hide();
 	end
 end
 
@@ -1155,19 +1198,6 @@ end
 
 function CombatConfig_Formatting_Update()
 	CombatConfigFormattingShowTimeStamp:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.timestamp);
-	CombatConfigFormattingShowBraces:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.braces);
-	if ( CHATCONFIG_SELECTED_FILTER.settings.braces ) then
-		BlizzardOptionsPanel_CheckButton_Enable(CombatConfigFormattingUnitNames, true);
-		BlizzardOptionsPanel_CheckButton_Enable(CombatConfigFormattingSpellNames, true);
-		BlizzardOptionsPanel_CheckButton_Enable(CombatConfigFormattingItemNames, true);
-	else
-		BlizzardOptionsPanel_CheckButton_Disable(CombatConfigFormattingUnitNames);
-		BlizzardOptionsPanel_CheckButton_Disable(CombatConfigFormattingSpellNames);
-		BlizzardOptionsPanel_CheckButton_Disable(CombatConfigFormattingItemNames);
-	end
-	CombatConfigFormattingUnitNames:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.unitBraces);
-	CombatConfigFormattingSpellNames:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.spellBraces);
-	CombatConfigFormattingItemNames:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.itemBraces);
 	CombatConfigFormattingFullText:SetChecked(CHATCONFIG_SELECTED_FILTER.settings.fullText);
 
 	local text, r, g, b = CombatLog_OnEvent(CHATCONFIG_SELECTED_FILTER, 0, "SPELL_DAMAGE", false, 0x0000000000000001, UnitName("player"), 0x511, 0, 0xF13000012B000820, EXAMPLE_TARGET_MONSTER, 0x10a28, 0, 116, EXAMPLE_SPELL_FROSTBOLT, SCHOOL_MASK_FROST, 27, SCHOOL_MASK_FROST, nil, nil, nil, 1, nil, nil);
@@ -1524,14 +1554,6 @@ function UpdateDefaultButtons(combatLogSelected)
 	end
 end
 
-function ChatConfigCategory_UpdateEnabled()
-	if ( GetChannelList() ) then
-		ChatConfigCategoryFrameButton3:Enable();
-	else
-		ChatConfigCategoryFrameButton3:Disable();
-	end
-end
-
 function CreateChatChannelList(self, ...)
 	if ( not FCF_GetCurrentChatFrame() ) then
 		return;
@@ -1588,6 +1610,28 @@ function CreateChatChannelList(self, ...)
 	end
 end
 
+function CreateAvailableChatChannelList(self, ...)
+	local channelName;
+	local count = 1;
+	CHAT_CONFIG_AVAILABLE_CHANNEL_LIST = {};
+	for i=1, select("#", ...), 1 do
+		channelName = select(i, ...);
+		-- If not in the channel, add it to the list.
+		if (GetChannelName(channelName) == 0) then
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count] = {};
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].text = channelName;
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].channelName = channelName;
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].type = "CHANNEL_"..channelName;
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].maxWidth = CHATCONFIG_CHANNELS_MAXWIDTH;
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].buttonText = CHAT_JOIN;
+			CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[count].buttonFunc = function (self)
+					SlashCmdList["JOIN"](CHAT_CONFIG_AVAILABLE_CHANNEL_LIST[self:GetParent():GetID()].channelName); 
+				end;
+			count = count+1;
+		end
+	end
+end
+
 COMBAT_CONFIG_TABS = {
 	[1] = { text = MESSAGE_SOURCES, frame = "CombatConfigMessageSources" },
 	[2] = { text = MESSAGE_TYPES, frame = "CombatConfigMessageTypes" },
@@ -1623,11 +1667,6 @@ function ChatConfigCombat_OnShow()
 	ChatConfigBackgroundFrame:SetPoint("TOPLEFT", ChatConfigCategoryFrame, "TOPRIGHT", 1, -135);
 	ChatConfig_ShowCombatTabs();
 	UpdateDefaultButtons(true);
-end
-
-function ChatConfigCombat_OnHide()
-	ChatConfigBackgroundFrame:SetPoint("TOPLEFT", ChatConfigCategoryFrame, "TOPRIGHT", 1, 0);
-	ChatConfig_HideCombatTabs();
 end
 
 function ChatConfig_UpdateFilterList()
@@ -1717,13 +1756,6 @@ function ChatConfig_UpdateChatSettings()
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsPVP);
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsSystem);
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsCreature);
-	
-	ChatConfigFrame.ChatTabManager:UpdateTabDisplay();
-end
-
-function ChatConfig_ResetChatSettings()
-	C_ChatInfo.ResetDefaultZoneChannels();
-	ChatConfig_UpdateChatSettings();
 end
 
 function UsesGUID(direction)
@@ -1958,8 +1990,7 @@ function ChatConfigFrame_PlayCheckboxSound (checked)
 end
 
 function ChatConfigCategoryFrame_Refresh(preserveCategorySelection)
-	local currentChatFrame = FCF_GetCurrentChatFrame();
-	if ( currentChatFrame ~= nil and IsCombatLog(currentChatFrame) ) then
+	if ( IsCombatLog(FCF_GetCurrentChatFrame()) ) then
 		ChatConfigCategoryFrameButton2:Show();
 		ChatConfigCategoryFrameButton3:SetPoint("TOPLEFT", ChatConfigCategoryFrameButton2, "BOTTOMLEFT", 0, -1);
 		ChatConfigCategoryFrameButton3:SetPoint("TOPRIGHT", ChatConfigCategoryFrameButton2, "BOTTOMRIGHT", 0, -1);
@@ -1972,43 +2003,38 @@ function ChatConfigCategoryFrame_Refresh(preserveCategorySelection)
 			ChatConfigCategory_OnClick(ChatConfigCategoryFrameButton1);
 		end
 	end
-	ChatConfigFrameHeaderText:SetText(currentChatFrame ~= nil and CHATCONFIG_HEADER:format(currentChatFrame.name) or "");
+	ChatConfigFrameHeaderText:SetText(format(CHATCONFIG_HEADER, FCF_GetCurrentChatFrame().name));
 	ChatConfigFrameHeader:SetWidth(ChatConfigFrameHeaderText:GetWidth()+200);
-	ChatConfigCategory_UpdateEnabled();
 end
 
 function ChatConfig_RefreshCurrentChatCategory(preserveCategorySelection)
 	if _G[CHAT_CONFIG_CATEGORIES[1]]:IsShown() then
-		ChatConfigChatSettings_UpdateCheckboxes();
-	-- The combat category is only in 1 chat frame so we don't need to update its checkboxes on a refresh.
-	--elseif _G[CHAT_CONFIG_CATEGORIES[2]]:IsShown() then
+		ChatConfigChatSettings_OnShow();
+	elseif _G[CHAT_CONFIG_CATEGORIES[2]]:IsShown() then
+		ChatConfigCombat_OnShow();
 	elseif _G[CHAT_CONFIG_CATEGORIES[3]]:IsShown() then
-		ChatConfigChannelSettings_UpdateCheckboxes();
+		ChatConfigChannelSettings_OnShow();
 	elseif _G[CHAT_CONFIG_CATEGORIES[4]]:IsShown() then
-		ChatConfigOtherSettings_UpdateCheckboxes();
+		ChatConfigOtherSettings_OnShow();
 	end
 	
 	ChatConfigCategoryFrame_Refresh(preserveCategorySelection);
 end
 
-function ChatConfigChatSettings_UpdateCheckboxes()
-	ChatConfig_UpdateCheckboxes(ChatConfigChatSettingsLeft);
-end
-
 function ChatConfigChatSettings_OnShow()
-	ChatConfigChatSettings_UpdateCheckboxes();
+	ChatConfig_UpdateCheckboxes(ChatConfigChatSettingsLeft);
 	UpdateDefaultButtons(false);
-end
-
-function ChatConfigChannelSettings_UpdateCheckboxes()
-	ChatConfig_UpdateCheckboxes(ChatConfigChannelSettingsLeft);
 end
 
 function ChatConfigChannelSettings_OnShow()
 	-- Have to build it here since the channel list doesn't exist on load
 	CreateChatChannelList(ChatConfigChannelSettings, GetChannelList());
 	ChatConfig_CreateCheckboxes(ChatConfigChannelSettingsLeft, CHAT_CONFIG_CHANNEL_LIST, "MovableChatConfigWideCheckBoxWithSwatchTemplate", CHAT_CONFIG_CHANNEL_SETTINGS_TITLE_WITH_DRAG_INSTRUCTIONS);
-	ChatConfigChannelSettings_UpdateCheckboxes();
+	ChatConfig_UpdateCheckboxes(ChatConfigChannelSettingsLeft);
+
+	CreateAvailableChatChannelList(ChatConfigChannelSettings, EnumerateServerChannels());
+	ChatConfig_CreateBoxes(ChatConfigChannelSettingsAvailable, CHAT_CONFIG_AVAILABLE_CHANNEL_LIST, "ChatConfigTextBoxTemplateWithButton", AVAILABLE_CHANNELS);
+
 	UpdateDefaultButtons(false);
 end
 
@@ -2017,7 +2043,7 @@ function ChatConfigChannelSettings_MoveChannelDown(channelIndex)
 		return;
 	end
 	
-	C_ChatInfo.SwapChatChannelsByChannelIndex(channelIndex, channelIndex + 1);
+	SwapChatChannelByLocalID(CHAT_CONFIG_CHANNEL_LIST[channelIndex].channelID, CHAT_CONFIG_CHANNEL_LIST[channelIndex + 1].channelID);
 	CreateChatChannelList(ChatConfigChannelSettings, GetChannelList());
 	ChatConfig_CreateCheckboxes(ChatConfigChannelSettingsLeft, CHAT_CONFIG_CHANNEL_LIST, "ChatConfigWideCheckBoxWithSwatchTemplate", CHAT_CONFIG_CHANNEL_SETTINGS_TITLE_WITH_DRAG_INSTRUCTIONS);
 	ChatConfig_UpdateCheckboxes(ChatConfigChannelSettingsLeft);
@@ -2028,21 +2054,17 @@ function ChatConfigChannelSettings_MoveChannelUp(channelIndex)
 		return;
 	end
 	
-	C_ChatInfo.SwapChatChannelsByChannelIndex(channelIndex, channelIndex - 1);
+	SwapChatChannelByLocalID(CHAT_CONFIG_CHANNEL_LIST[channelIndex].channelID, CHAT_CONFIG_CHANNEL_LIST[channelIndex - 1].channelID);
 	CreateChatChannelList(ChatConfigChannelSettings, GetChannelList());
 	ChatConfig_CreateCheckboxes(ChatConfigChannelSettingsLeft, CHAT_CONFIG_CHANNEL_LIST, "ChatConfigWideCheckBoxWithSwatchTemplate", CHAT_CONFIG_CHANNEL_SETTINGS_TITLE_WITH_DRAG_INSTRUCTIONS);
 	ChatConfig_UpdateCheckboxes(ChatConfigChannelSettingsLeft);
 end
 
-function ChatConfigOtherSettings_UpdateCheckboxes()
+function ChatConfigOtherSettings_OnShow()
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsCombat);
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsPVP);
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsSystem);
 	ChatConfig_UpdateCheckboxes(ChatConfigOtherSettingsCreature);
-end
-
-function ChatConfigOtherSettings_OnShow()
-	ChatConfigOtherSettings_UpdateCheckboxes();
 	UpdateDefaultButtons(false);
 end
 
@@ -2085,10 +2107,6 @@ function ChatConfigFrameTabManagerMixin:OnLoad()
 end
 
 function ChatConfigFrameTabManagerMixin:OnShow()
-	self:UpdateTabDisplay();
-end
-
-function ChatConfigFrameTabManagerMixin:UpdateTabDisplay()
 	self.tabPool:ReleaseAll();
 	
 	local lastTab = nil;
@@ -2266,7 +2284,7 @@ function ChatConfigWideCheckBoxMixin:LeaveChannel()
 	local channelIndex = self:GetID();
 	if CHAT_CONFIG_CHANNEL_LIST[channelIndex].isBlank then
 		for i = channelIndex, #CHAT_CONFIG_CHANNEL_LIST - 1 do
-			C_ChatInfo.SwapChatChannelsByChannelIndex(i, i + 1);
+			SwapChatChannelByLocalID(CHAT_CONFIG_CHANNEL_LIST[i].channelID, CHAT_CONFIG_CHANNEL_LIST[i + 1].channelID);
 		end
 		
 		CreateChatChannelList(ChatConfigChannelSettings, GetChannelList());

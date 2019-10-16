@@ -9,8 +9,8 @@ UIWidgetManager:RegisterWidgetVisTypeTemplate(Enum.UIWidgetVisualizationType.Hor
 
 UIWidgetTemplateHorizontalCurrenciesMixin = CreateFromMixins(UIWidgetBaseTemplateMixin);
 
-function UIWidgetTemplateHorizontalCurrenciesMixin:Setup(widgetInfo, widgetContainer)
-	UIWidgetBaseTemplateMixin.Setup(self, widgetInfo, widgetContainer);
+function UIWidgetTemplateHorizontalCurrenciesMixin:Setup(widgetInfo)
+	UIWidgetBaseTemplateMixin.Setup(self, widgetInfo);
 	self.currencyPool:ReleaseAll();
 
 	local previousCurrencyFrame;
@@ -22,8 +22,7 @@ function UIWidgetTemplateHorizontalCurrenciesMixin:Setup(widgetInfo, widgetConta
 		local currencyFrame = self.currencyPool:Acquire();
 		currencyFrame:Show();
 
-		local tooltipEnabledState = currencyInfo.isCurrencyMaxed and Enum.WidgetEnabledState.Red or Enum.WidgetEnabledState.Highlight;
-		currencyFrame:Setup(currencyInfo, Enum.WidgetEnabledState.Enabled, tooltipEnabledState);
+		currencyFrame:Setup(currencyInfo, Enum.WidgetEnabledState.Highlight);
 
 		if previousCurrencyFrame then
 			currencyFrame:SetPoint("TOPLEFT", previousCurrencyFrame, "TOPRIGHT", 10, 0);

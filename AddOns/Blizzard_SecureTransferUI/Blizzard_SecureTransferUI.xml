@@ -77,6 +77,14 @@
 			<Anchors>
 				<Anchor point="TOP" x="0" y="-135"/>
 			</Anchors>
+			<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+				<TileSize>
+					<AbsValue val="32" />
+				</TileSize>
+				<EdgeSize>
+					<AbsValue val="32" />
+				</EdgeSize>
+			</Backdrop>
 			<Layers>
 				<Layer level="BACKGROUND">
 					<Texture>
@@ -111,7 +119,6 @@
 				</Layer>
 			</Layers>
 			<Frames>
-				<Frame parentKey="Border" inherits="SecureDialogBorderTemplate"/>
 				<Button parentKey="Button1" inherits="SecureTransferButtonTemplate" text="OKAY" id="1">
 					<Size x="120" y="22"/>
 					<Anchors>

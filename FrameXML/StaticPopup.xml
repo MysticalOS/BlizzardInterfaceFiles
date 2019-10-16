@@ -25,7 +25,7 @@
 				StaticPopup_OnClick(self:GetParent(), self:GetID());
 			</OnClick>
 		</Scripts>
-		<ButtonText name="$parentText" parentKey="Text">
+		<ButtonText name="$parentText">
 			<Anchors>
 				<Anchor point="CENTER">
 					<Offset x="0" y="1"/>
@@ -52,6 +52,17 @@
 		<Size>
 			<AbsDimension x="320" y="72"/>
 		</Size>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background-Dark" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="11" top="11" bottom="11"/>
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+		</Backdrop>
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString name="$parentText" parentKey="text" inherits="GameFontHighlight">
@@ -92,7 +103,6 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame parentKey="Border" inherits="DialogBorderDarkTemplate"/>
 			<Frame parentKey="CoverFrame" frameLevel="1" enableMouse="true" enableKeyboard="true" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="UIParent"/>
@@ -212,7 +222,7 @@
 					<Anchor point="TOP" relativeTo="$parentText" relativePoint="BOTTOM" x="0" y="-5"/>
 				</Anchors>
 			</Frame>
-			<ItemButton parentKey="ItemFrame" name="$parentItemFrame" hidden="true">
+			<Button parentKey="ItemFrame" name="$parentItemFrame" inherits="ItemButtonTemplate" hidden="true">
 				<Size>
 					<AbsDimension x="37" y="37"/>
 				</Size>
@@ -272,7 +282,7 @@
 					</OnLoad>
 					<OnEvent function="StaticPopupItemFrame_OnEvent"/>
 				</Scripts>
-			</ItemButton>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnUpdate>

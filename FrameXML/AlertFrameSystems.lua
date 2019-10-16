@@ -4,8 +4,7 @@ function AlertFrameSystems_Register()
 	ScenarioAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("ScenarioAlertFrameTemplate", ScenarioAlertFrame_SetUp);
 	InvasionAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("ScenarioLegionInvasionAlertFrameTemplate", ScenarioLegionInvasionAlertFrame_SetUp, ScenarioLegionInvasionAlertFrame_Coalesce);
 	DigsiteCompleteAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("DigsiteCompleteToastFrameTemplate", DigsiteCompleteToastFrame_SetUp);
-	EntitlementDeliveredAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("EntitlementDeliveredAlertFrameTemplate", EntitlementDeliveredAlertFrame_SetUp);
-	RafRewardDeliveredAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("RafRewardDeliveredAlertFrameTemplate", RafRewardDeliveredAlertFrame_SetUp);
+	StorePurchaseAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("StorePurchaseAlertFrameTemplate", StorePurchaseAlertFrame_SetUp);
 	GarrisonBuildingAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("GarrisonBuildingAlertFrameTemplate", GarrisonBuildingAlertFrame_SetUp);
 	GarrisonMissionAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("GarrisonStandardMissionAlertFrameTemplate", GarrisonMissionAlertFrame_SetUp);
 	GarrisonShipMissionAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("GarrisonShipMissionAlertFrameTemplate", GarrisonMissionAlertFrame_SetUp);
@@ -15,9 +14,8 @@ function AlertFrameSystems_Register()
 	GarrisonTalentAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("GarrisonTalentAlertFrameTemplate", GarrisonTalentAlertFrame_SetUp);
 	WorldQuestCompleteAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("WorldQuestCompleteAlertFrameTemplate", WorldQuestCompleteAlertFrame_SetUp, WorldQuestCompleteAlertFrame_Coalesce);
 	LegendaryItemAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("LegendaryItemAlertFrameTemplate", LegendaryItemAlertFrame_SetUp);
-	NewPetAlertSystem = AlertFrame:AddQueuedAlertFrameSubSystem("NewPetAlertFrameTemplate", NewPetAlertFrame_SetUp);
-	NewMountAlertSystem = AlertFrame:AddQueuedAlertFrameSubSystem("NewMountAlertFrameTemplate", NewMountAlertFrame_SetUp); 
-	NewToyAlertSystem = AlertFrame:AddQueuedAlertFrameSubSystem("NewToyAlertFrameTemplate", NewToyAlertFrame_SetUp); 
+	NewPetAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("NewPetAlertFrameTemplate", NewPetAlertFrame_SetUp);
+	NewMountAlertSystem = AlertFrame:AddSimpleAlertFrameSubSystem("NewMountAlertFrameTemplate", NewMountAlertFrame_SetUp);
 end
 
 -- [[ GuildChallengeAlertFrame ]] --
@@ -424,7 +422,7 @@ function AchievementAlertFrame_OnClick (self, button, down)
 end
 
 AchievementAlertSystem = AlertFrame:AddQueuedAlertFrameSubSystem("AchievementAlertFrameTemplate", AchievementAlertFrame_SetUp, 2, 6);
-AchievementAlertSystem:SetCanShowMoreConditionFunc(function() return not C_PetBattles.IsInBattle() end);
+AchievementAlertSystem:SetCanShowMoreConditionFunc(function() return false end);
 
 -- [[ CriteriaAlertFrame ]] --
 function CriteriaAlertFrame_SetUp(frame, achievementID, criteriaString)
@@ -444,6 +442,8 @@ function LootAlertFrame_OnEnter(self)
 	GameTooltip:SetHyperlink(self.hyperlink);
 	GameTooltip:Show();
 end
+
+local LOOT_SOURCE_GARRISON_CACHE = 10;
 
 -- [[ LootUpgradeFrameTemplate ]] --
 LOOTUPGRADEFRAME_QUALITY_TEXTURES = {
@@ -468,12 +468,25 @@ LOOTWONALERTFRAME_VALUES={
 }
 
 -- NOTE - This may also be called for an externally created frame. (E.g. bonus roll has its own frame)
-function LootWonAlertFrame_SetUp(self, itemLink, originalQuantity, rollType, roll, specID, isCurrency, showFactionBG, lootSource, lessAwesome, isUpgraded, wonRoll, showRatedBG, isSecondaryResult)
-	local itemName, itemTexture, quantity, itemRarity, itemLink = ItemUtil.GetItemDetails(itemLink, originalQuantity, isCurrency, lootSource);
+function LootWonAlertFrame_SetUp(self, itemLink, quantity, rollType, roll, specID, isCurrency, showFactionBG, lootSource, lessAwesome, isUpgraded, wonRoll, showRatedBG)
+	local itemName, itemHyperLink, itemRarity, itemTexture, _;
+	if (isCurrency) then
+		local currencyID = C_CurrencyInfo.GetCurrencyIDFromLink(itemLink); 
+		itemName, _, itemTexture, _, _, _, _, itemRarity = GetCurrencyInfo(itemLink);
+		itemName, itemTexture, quantity, itemRarity = CurrencyContainerUtil.GetCurrencyContainerInfoForAlert(currencyID, quantity, itemName, itemTexture, itemRarity); 
+		if ( lootSource == LOOT_SOURCE_GARRISON_CACHE ) then
+			itemName = format(GARRISON_RESOURCES_LOOT, quantity);
+		else
+			if (quantity > 1) then 
+				itemName = format(CURRENCY_QUANTITY_TEMPLATE, quantity, itemName);
+			end
+		end
+		itemHyperLink = itemLink;
+	else
+		itemName, itemHyperLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink);
+	end
 
-	self.isCurrency = isCurrency;
-
-	local isAzeriteEmpowered = C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink);
+	local isAzeriteEmpowered = false;
 	local windowInfo = wonRoll and LOOTWONALERTFRAME_VALUES.WonRoll or LOOTWONALERTFRAME_VALUES.Default;
 	if( showFactionBG ) then
 		local factionGroup = UnitFactionGroup("player");
@@ -523,17 +536,41 @@ function LootWonAlertFrame_SetUp(self, itemLink, originalQuantity, rollType, rol
 		self.glow.suppressGlow = true;
 	end
 
-	self.Label:SetText(isSecondaryResult and YOU_RECEIVED_LABEL or windowInfo.labelText);
-	self.Label:SetPoint("TOPLEFT", self.lootItem.Icon, "TOPRIGHT", windowInfo.labelOffsetX, windowInfo.labelOffsetY);
+	self.IconBorder:SetShown(not windowInfo.noIconBorder);
+	if ( windowInfo.iconUnderBG ) then
+		self.Icon:SetDrawLayer("BACKGROUND");
+	else
+		self.Icon:SetDrawLayer("BORDER");
+	end
 
+	self.Label:SetText(windowInfo.labelText);
+	self.Label:SetPoint("TOPLEFT", self.Icon, "TOPRIGHT", windowInfo.labelOffsetX, windowInfo.labelOffsetY);
+
+	self.isCurrency = isCurrency;
+
+	self.Icon:SetTexture(itemTexture);
 	self.ItemName:SetText(itemName);
 	local color = ITEM_QUALITY_COLORS[itemRarity];
 	self.ItemName:SetVertexColor(color.r, color.g, color.b);
-	
-	local isIconBorderShown = not windowInfo.noIconBorder;
-	local isIconBorderDropShadowShown = false;
-	local iconDrawLayer = windowInfo.iconUnderBG and "BACKGROUND" or "BORDER";
-	self.lootItem:Init(itemLink, originalQuantity, specID, isCurrency, isUpgraded, isIconBorderShown, isIconBorderDropShadowShown, iconDrawLayer);
+	local atlas = LOOT_BORDER_BY_QUALITY[itemRarity];
+	local desaturate = false;
+	if (not atlas) then
+		atlas = "loottoast-itemborder-gold";
+		desaturate = true;
+	end
+	self.IconBorder:SetAtlas(atlas);
+	self.IconBorder:SetDesaturated(desaturate);
+	self.IconOverlay:Hide();
+
+	if ( specID and specID > 0 and not isCurrency ) then
+		local id, name, description, texture, role, class = GetSpecializationInfoByID(specID);
+		self.SpecIcon:SetTexture(texture);
+		self.SpecIcon:Show();
+		self.SpecRing:Show();
+	else
+		self.SpecIcon:Hide();
+		self.SpecRing:Hide();
+	end
 
 	if ( rollType == LOOT_ROLL_TYPE_NEED ) then
 		self.RollTypeIcon:SetTexture("Interface\\Buttons\\UI-GroupLoot-Dice-Up");
@@ -550,7 +587,21 @@ function LootWonAlertFrame_SetUp(self, itemLink, originalQuantity, rollType, rol
 		self.RollValue:Hide();
 	end
 
-	self.hyperlink = itemLink;
+	-- item upgraded?
+	self.animArrows:Stop();
+	if ( isUpgraded ) then
+		local upgradeTexture = LOOTUPGRADEFRAME_QUALITY_TEXTURES[itemRarity] or LOOTUPGRADEFRAME_QUALITY_TEXTURES[LE_ITEM_QUALITY_UNCOMMON];
+		for i = 1, self.numArrows do
+			self["Arrow"..i]:SetAtlas(upgradeTexture.arrow, true);
+		end
+		self.animArrows:Play();
+	else
+		for i = 1, self.numArrows do
+			self["Arrow"..i]:SetAlpha(0);
+		end
+	end
+
+	self.hyperlink = itemHyperLink;
 	if ( lessAwesome ) then
 		PlaySound(SOUNDKIT.UI_RAID_LOOT_TOAST_LESSER_ITEM_WON);
 	elseif ( isUpgraded ) then
@@ -647,14 +698,15 @@ function DigsiteCompleteToastFrame_SetUp(frame, raceName, raceTexture)
 	PlaySound(SOUNDKIT.UI_DIG_SITE_COMPLETION_TOAST);
 end
 
--- [[ EntitlementDeliveredAlertFrame ]] --
-function EntitlementDeliveredAlertFrame_SetUp(frame, type, icon, name, payloadID, showFancyToast)
+-- [[ StorePurchaseAlertFrame ]] --
+function StorePurchaseAlertFrame_SetUp(frame, type, icon, name, payloadID, payloadGUID)
 	frame.Icon:SetTexture(icon);
 	frame.Title:SetFontObject(GameFontNormalLarge);
 	frame.Title:SetText(name);
 
 	frame.type = type;
 	frame.payloadID = payloadID;
+	frame.payloadGUID = payloadGUID;
 
 	if ( frame.Title:IsTruncated() ) then
 		frame.Title:SetFontObject(GameFontNormal);
@@ -662,44 +714,21 @@ function EntitlementDeliveredAlertFrame_SetUp(frame, type, icon, name, payloadID
 	PlaySound(SOUNDKIT.UI_IG_STORE_PURCHASE_DELIVERED_TOAST_01);
 end
 
--- [[ RafRewardDeliveredAlertFrame ]] --
-function RafRewardDeliveredAlertFrame_SetUp(frame, type, icon, name, payloadID, showFancyToast)
-	EntitlementDeliveredAlertFrame_SetUp(frame, type, icon, name, payloadID, showFancyToast);
-
-	if showFancyToast then
-		frame.StandardBackground:SetShown(false);
-		frame.FancyBackground:SetShown(true);
-		frame.Icon:SetPoint("LEFT", frame, "LEFT", 34, -5);
-	else
-		frame.StandardBackground:SetShown(true);
-		frame.FancyBackground:SetShown(false);
-		frame.Icon:SetPoint("LEFT", frame, "LEFT", 35, -3);
-	end
-
-	if type == Enum.WoWEntitlementType.GameTime then
-		frame.Title:SetTextColor(HEIRLOOM_BLUE_COLOR:GetRGBA());
-	else
-		frame.Title:SetTextColor(EPIC_PURPLE_COLOR:GetRGBA());
-	end
-end
-
-function EntitlementDelivered_OnClick(self, button, down)
+function StorePurchaseAlertFrame_OnClick(self, button, down)
 	if( AlertFrame_OnClick(self, button, down) ) then
 		return;
 	end
 
-	if (self.type == Enum.WoWEntitlementType.Item) then
+	if (self.type == Enum.StoreDeliveryType.Item) then
 		local slot = SearchBagsForItem(self.payloadID);
 		if (slot >= 0) then
 			OpenBag(slot);
 		end
-	elseif (self.type == Enum.WoWEntitlementType.Mount) then
+	elseif (self.type == Enum.StoreDeliveryType.Mount) then
 		ToggleCollectionsJournal(1);
-	elseif (self.type == Enum.WoWEntitlementType.Battlepet) then
+	elseif (self.type == Enum.StoreDeliveryType.Battlepet) then
 		ToggleCollectionsJournal(2);
-	elseif (self.type == Enum.WoWEntitlementType.Toy) then
-		ToggleToyCollection(self.payloadID);
-	elseif (self.type == Enum.WoWEntitlementType.Appearance or self.type == Enum.WoWEntitlementType.AppearanceSet or self.type == Enum.WoWEntitlementType.Illusion) then
+	elseif (self.type == Enum.StoreDeliveryType.Collection) then
 		ToggleCollectionsJournal(5);
 	end
 end
@@ -730,30 +759,24 @@ end
 -- [[ GarrisonRandomMissionAlertFrame ]] --
 function GarrisonRandomMissionAlertFrame_SetUp(frame, missionInfo)
 	frame.Level:SetText(missionInfo.level);
-	
-	local followerOptions = GarrisonFollowerOptions[missionInfo.followerTypeID];
-	local showItemLevel = followerOptions.showILevelOnMission and missionInfo.iLevel ~= 0;
-	if showItemLevel then
 	frame.ItemLevel:SetText("(" .. missionInfo.iLevel .. ")");
-	end
-
-	if (showItemLevel and missionInfo.isRare) then
-		frame.Level:SetPoint("TOP", -115, -14);
-		frame.ItemLevel:SetPoint("TOP", -115, -37);
-		frame.Rare:SetPoint("TOP", -115, -48);
+	if (missionInfo.iLevel ~= 0 and missionInfo.isRare) then
+		frame.Level:SetPoint("TOP", "$parent", "TOP", -115, -14);
+		frame.ItemLevel:SetPoint("TOP", "$parent", "TOP", -115, -37);
+		frame.Rare:SetPoint("TOP", "$parent", "TOP", -115, -48);
 	elseif (missionInfo.isRare) then
-		frame.Level:SetPoint("TOP", -115, -19);
-		frame.Rare:SetPoint("TOP", -115, -45);
-	elseif (showItemLevel) then
-		frame.Level:SetPoint("TOP", -115, -19);
-		frame.ItemLevel:SetPoint("TOP", -115, -45);
+		frame.Level:SetPoint("TOP", "$parent", "TOP", -115, -19);
+		frame.Rare:SetPoint("TOP", "$parent", "TOP", -115, -45);
+	elseif (missionInfo.iLevel ~= 0) then
+		frame.Level:SetPoint("TOP", "$parent", "TOP", -115, -19);
+		frame.ItemLevel:SetPoint("TOP", "$parent", "TOP", -115, -45);
 	else
-		frame.Level:SetPoint("TOP", -115, -28);
+		frame.Level:SetPoint("TOP", "$parent", "TOP", -115, -28);
 	end
 
-	frame.ItemLevel:SetShown(showItemLevel);
+	frame.ItemLevel:SetShown(missionInfo.iLevel ~= 0);
 	frame.Rare:SetShown(missionInfo.isRare);
-	frame.garrisonType = followerOptions.garrisonType;
+	frame.garrisonType = GarrisonFollowerOptions[missionInfo.followerTypeID].garrisonType;
 	PlaySound(SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE);
 end
 
@@ -891,7 +914,8 @@ function NewRecipeLearnedAlertFrame_GetStarTextureFromRank(rank)
 end
 
 function NewRecipeLearnedAlertFrame_SetUp(self, recipeID)
-	local tradeSkillID, skillLineName, parentTradeSkillID = C_TradeSkillUI.GetTradeSkillLineForRecipe(recipeID);
+--[[ Removed for classic
+	local tradeSkillID, skillLineName = C_TradeSkillUI.GetTradeSkillLineForRecipe(recipeID);
 	if tradeSkillID then
 		local recipeName = GetSpellInfo(recipeID);
 		if recipeName then
@@ -909,11 +933,12 @@ function NewRecipeLearnedAlertFrame_SetUp(self, recipeID)
 			else
 				self.Name:SetText(recipeName);
 			end
-			self.tradeSkillID = parentTradeSkillID or tradeSkillID;
+			self.tradeSkillID = tradeSkillID;
 			self.recipeID = recipeID;
 			return true;
 		end
 	end
+]]
 	return false;
 end
 
@@ -932,7 +957,7 @@ NewRecipeLearnedAlertSystem = AlertFrame:AddQueuedAlertFrameSubSystem("NewRecipe
 
 -- [[WorldQuestCompleteAlertFrame ]] --
 function WorldQuestCompleteAlertFrame_GetIconForQuestID(questID)
-	local tagID, tagName, worldQuestType, rarity, isElite, tradeskillLineIndex = GetQuestTagInfo(questID);
+	local tagID, tagName, worldQuestType, rarity, isElite, tradeskillLineIndex, displayTimeLeft = GetQuestTagInfo(questID);
 
 	if ( worldQuestType == LE_QUEST_TAG_TYPE_PVP ) then
 		return "Interface\\Icons\\achievement_arena_2v2_1";
@@ -1087,27 +1112,4 @@ function NewMountAlertFrameMixin:OnClick(button, down)
 
 	SetCollectionsJournalShown(true, COLLECTIONS_JOURNAL_TAB_INDEX_MOUNTS);
 	MountJournal_SelectByMountID(self.mountID);
-end
-
--- [[ NewToyAlertFrame ]] --
-
-function NewToyAlertFrame_SetUp(frame, toyID)
-	frame:SetUp(toyID);
-end
-
-NewToyAlertFrameMixin = CreateFromMixins(ItemAlertFrameMixin);
-
-function NewToyAlertFrameMixin:SetUp(toyID)
-	self.toyID = toyID;
-
-	local itemID, toyName, icon, isFavorite, hasFanfare, itemQuality = C_ToyBox.GetToyInfo(self.toyID);
-	self:SetUpDisplay(icon, itemQuality, toyName, YOU_EARNED_LABEL);
-end
-
-function NewToyAlertFrameMixin:OnClick(button, down)
-	if AlertFrame_OnClick(self, button, down) then
-		return;
-	end
-
-	ToggleToyCollection(self.toyID);
 end

@@ -50,7 +50,7 @@ function BattlefieldMapTabMixin:OnClick(button)
 			self:GetParent():InitializeOptionsDropDown();
 		end
 		UIDropDownMenu_Initialize(self.OptionsDropDown, InitializeOptionsDropDown, "MENU");
-		ToggleDropDownMenu(1, nil, self.OptionsDropDown, self, 0, 0);
+		ToggleDropDownMenu(1, nil, self.OptionsDropDown, self, 0, 0);	
 		return;
 	end
 
@@ -69,6 +69,10 @@ function BattlefieldMapTabMixin:OnClick(button)
 		end
 	end
 	ValidateFramePosition(self);
+end
+
+function BattlefieldMapTabMixin:OnEnter()
+	GameTooltip_AddNewbieTip(self, BATTLEFIELDMINIMAP_OPTIONS_LABEL, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_BATTLEFIELDMINIMAP_OPTIONS, 1);
 end
 
 function BattlefieldMapTabMixin:OnDragStart()
@@ -93,7 +97,7 @@ function BattlefieldMapTabMixin:InitializeOptionsDropDown()
 		BattlefieldMapFrame:UpdateUnitsVisibility();
 	end;
 	info.checked = BattlefieldMapOptions.showPlayers;
-	info.isNotRadio = true;
+	info.classicChecks = true;
 	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
 
 	-- Battlefield minimap lock
@@ -102,7 +106,7 @@ function BattlefieldMapTabMixin:InitializeOptionsDropDown()
 		BattlefieldMapOptions.locked = not BattlefieldMapOptions.locked;
 	end;
 	info.checked = BattlefieldMapOptions.locked;
-	info.isNotRadio = true;
+	info.classicChecks = true;
 	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
 
 	-- Opacity
@@ -111,6 +115,7 @@ function BattlefieldMapTabMixin:InitializeOptionsDropDown()
 		self:ShowOpacity();
 	end;
 	info.notCheckable = true;
+	info.leftPadding = 24;
 	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
 end
 
@@ -129,12 +134,16 @@ end
 BattlefieldMapMixin = {};
 
 function BattlefieldMapMixin:Toggle()
-	if self:IsShown() then
-		SetCVar("showBattlefieldMinimap", "0");
-		self:Hide();
+	if (BattlefieldMapAllowed()) then
+		if self:IsShown() then
+			SetCVar("showBattlefieldMinimap", "0");	
+			self:Hide();
+		else
+			SetCVar("showBattlefieldMinimap", "1");
+			self:Show();
+		end
 	else
-		SetCVar("showBattlefieldMinimap", "1");
-		self:Show();
+		self:Hide();
 	end
 end
 
@@ -152,6 +161,8 @@ function BattlefieldMapMixin:OnLoad()
 	self:RegisterEvent("ADDON_LOADED");
 	self:RegisterEvent("PLAYER_ENTERING_WORLD");
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+	self:RegisterEvent("UPDATE_ALL_UI_WIDGETS");
+	self:RegisterEvent("UPDATE_UI_WIDGET");
 end
 
 function BattlefieldMapMixin:OnShow()
@@ -190,11 +201,13 @@ function BattlefieldMapMixin:OnEvent(event, ...)
 			self:UpdateUnitsVisibility();
 			self:UnregisterEvent("ADDON_LOADED");
 		end
-	elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
-		if GetCVar("showBattlefieldMinimap") == "1" then
+	elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" or event == "UPDATE_ALL_UI_WIDGETS" or event == "UPDATE_UI_WIDGET" then
+		if GetCVar("showBattlefieldMinimap") == "1" and BattlefieldMapAllowed() then
 			local mapID = MapUtil.GetDisplayableMapForPlayer();
 			self:SetMapID(mapID);
 			self:Show();
+		else
+			self:Hide();
 		end
 	end
 end
@@ -203,22 +216,21 @@ function BattlefieldMapMixin:AddStandardDataProviders()
 	self:AddDataProvider(CreateFromMixins(MapExplorationDataProviderMixin));
 	self:AddDataProvider(CreateFromMixins(MapHighlightDataProviderMixin));
 	self:AddDataProvider(CreateFromMixins(BattlefieldFlagDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(VehicleDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(EncounterJournalDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(FogOfWarDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(VehicleDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(EncounterJournalDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(FogOfWarDataProviderMixin));
 	self:AddDataProvider(CreateFromMixins(DeathMapDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(ScenarioDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(VignetteDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(ScenarioDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(VignetteDataProviderMixin));
 	self:AddDataProvider(CreateFromMixins(GossipDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(FlightPointDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(PetTamerDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(DigSiteDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(DungeonEntranceDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(MapLinkDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(SelectableGraveyardDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(FlightPointDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(PetTamerDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(DigSiteDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(DungeonEntranceDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(MapLinkDataProviderMixin));
+	--self:AddDataProvider(CreateFromMixins(SelectableGraveyardDataProviderMixin));
 	self:AddDataProvider(CreateFromMixins(AreaPOIDataProviderMixin));
-	self:AddDataProvider(CreateFromMixins(QuestSessionDataProviderMixin));
-
+	
 	self.groupMembersDataProvider = CreateFromMixins(GroupMembersDataProviderMixin);
 	self.groupMembersDataProvider:SetUnitPinSize("player", BATTLEFIELD_MAP_PLAYER_SIZE);
 	self.groupMembersDataProvider:SetUnitPinSize("party", BATTLEFIELD_MAP_PARTY_MEMBER_SIZE);
@@ -263,17 +275,9 @@ function BattlefieldMapMixin:UpdateUnitsVisibility()
 	if BattlefieldMapOptions.showPlayers then
 		self.groupMembersDataProvider:SetUnitPinSize("party", BATTLEFIELD_MAP_PARTY_MEMBER_SIZE);
 		self.groupMembersDataProvider:SetUnitPinSize("raid", BATTLEFIELD_MAP_RAID_MEMBER_SIZE);
-		if not self.vehicleDataProvider then
-			self.vehicleDataProvider = CreateFromMixins(VehicleDataProviderMixin);
-			self:AddDataProvider(self.vehicleDataProvider);
-		end
 	else
 		self.groupMembersDataProvider:SetUnitPinSize("party", 0);
 		self.groupMembersDataProvider:SetUnitPinSize("raid", 0);
-		if self.vehicleDataProvider then
-			self:RemoveDataProvider(self.vehicleDataProvider);
-			self.vehicleDataProvider = nil;
-		end
 	end
 end
 

@@ -72,6 +72,20 @@
 					</OnClick>
 				</Scripts>
 			</Button>
+			<Button name="$parentClassic" inherits="UIPanelButtonTemplate" text="CLASSIC_DEFAULTS">
+				<Size>
+					<AbsDimension x="126" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeTo="$parentDefaults" relativePoint="BOTTOMRIGHT"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+						VideoOptionsFrameClassic_OnClick(self, button);
+					</OnClick>
+				</Scripts>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnLoad function="VideoOptionsFrame_OnLoad"/>

@@ -19,10 +19,10 @@ function QuestDataProviderMixin:OnAdded(mapCanvas)
 	end
 
 	if not self.setFocusedQuestIDCallback then
-		self.setFocusedQuestIDCallback = function(event, ...) self:RefreshAllData(...); end;
+		self.setFocusedQuestIDCallback = function(event, ...) self:SetFocusedQuestID(...); end;
 	end
 	if not self.clearFocusedQuestIDCallback then
-		self.clearFocusedQuestIDCallback = function(event, ...) self:RefreshAllData(...); end;
+		self.clearFocusedQuestIDCallback = function(event, ...) self:ClearFocusedQuestID(...); end;
 	end
 	
 	self:GetMap():RegisterCallback("SetFocusedQuestID", self.setFocusedQuestIDCallback);
@@ -30,10 +30,20 @@ function QuestDataProviderMixin:OnAdded(mapCanvas)
 end
 
 function QuestDataProviderMixin:OnRemoved(mapCanvas)
+	MapCanvasDataProviderMixin.OnRemoved(self, mapCanvas);
+
 	self:GetMap():UnregisterCallback("SetFocusedQuestID", self.setFocusedQuestIDCallback);
 	self:GetMap():UnregisterCallback("ClearFocusedQuestID", self.clearFocusedQuestIDCallback);
+end
 
-	MapCanvasDataProviderMixin.OnRemoved(self, mapCanvas);
+function QuestDataProviderMixin:SetFocusedQuestID(questID)
+	self.focusedQuestID = questID;
+	self:RefreshAllData();
+end
+
+function QuestDataProviderMixin:ClearFocusedQuestID(questID)
+	self.focusedQuestID = nil;
+	self:RefreshAllData();
 end
 
 function QuestDataProviderMixin:OnEvent(event, ...)
@@ -72,28 +82,12 @@ function QuestDataProviderMixin:RefreshAllData(fromOnShow)
 	local mapInfo = C_Map.GetMapInfo(mapID);
 	local questsOnMap = C_QuestLog.GetQuestsOnMap(mapID);
 	local doesMapShowTaskObjectives = C_TaskQuest.DoesMapShowTaskQuestObjectives(mapID);
-	
-	local function CheckAddQuest(questID, x, y, isMapIndicatorQuest, frameLevelOffset, isWaypoint)
-		if self:ShouldShowQuest(questID, mapInfo.mapType, doesMapShowTaskObjectives, isMapIndicatorQuest) then
-			local pin = self:AddQuest(questID, x, y, frameLevelOffset, isWaypoint);
-			table.insert(pinsToQuantize, pin);
-		end
-	end
-
 	if questsOnMap then
 		for i, info in ipairs(questsOnMap) do
-			CheckAddQuest(info.questID, info.x, info.y, info.isMapIndicatorQuest, i);
-		end
-	end
-	
-	local waypointQuestID = QuestMapFrame_GetFocusedQuestID() or GetSuperTrackedQuestID();
-	if waypointQuestID then
-		local x, y = C_QuestLog.GetNextWaypointForMap(waypointQuestID, mapID);
-		if x and y then
-			local isMapIndicatorQuest = false;
-			local frameLevelOffset = questsOnMap and (#questsOnMap + 1) or 0;
-			local isWaypoint = true;
-			CheckAddQuest(waypointQuestID, x, y, isMapIndicatorQuest, frameLevelOffset, isWaypoint);
+			if self:ShouldShowQuest(info.questID, mapInfo.mapType, doesMapShowTaskObjectives) then
+				local pin = self:AddQuest(info.questID, info.x, info.y, i);
+				table.insert(pinsToQuantize, pin);
+			end
 		end
 	end
 
@@ -106,21 +100,14 @@ function QuestDataProviderMixin:RefreshAllData(fromOnShow)
 	end
 end
 
-function QuestDataProviderMixin:ShouldShowQuest(questID, mapType, doesMapShowTaskObjectives, isMapIndicatorQuest)
-	local focusedQuestID = QuestMapFrame_GetFocusedQuestID();
-	if focusedQuestID and focusedQuestID ~= questID then
+function QuestDataProviderMixin:ShouldShowQuest(questID, mapType, doesMapShowTaskObjectives)
+	if self.focusedQuestID and self.focusedQuestID ~= questID then
 		return false;
 	end
 	if QuestUtils_IsQuestWorldQuest(questID) then
 		if not doesMapShowTaskObjectives then
 			return false;
 		end
-	end
-	if QuestUtils_IsQuestBonusObjective(questID) then
-		return false;
-	end
-	if isMapIndicatorQuest or not HaveQuestData(questID) then 
-		return false; 
 	end
 	return MapUtil.ShouldMapTypeShowQuests(mapType);
 end
@@ -148,12 +135,7 @@ function QuestDataProviderMixin:OnCanvasSizeChanged()
 	self.poiQuantizer:Resize(math.ceil(self.poiQuantizer.size * ratio), self.poiQuantizer.size);
 end
 
-local function GetQuestCompleteIcon(questID)
-	local isLegendaryQuest = C_QuestLog.IsLegendaryQuest(questID);
-	return isLegendaryQuest and "Interface/WorldMap/UI-WorldMap-QuestIcon-Legendary" or "Interface/WorldMap/UI-WorldMap-QuestIcon";
-end
-
-function QuestDataProviderMixin:AddQuest(questID, x, y, frameLevelOffset, isWaypoint)
+function QuestDataProviderMixin:AddQuest(questID, x, y, frameLevelOffset)
 	local pin = self:GetMap():AcquirePin(self:GetPinTemplate());
 	pin.questID = questID;
 
@@ -174,25 +156,12 @@ function QuestDataProviderMixin:AddQuest(questID, x, y, frameLevelOffset, isWayp
 
 	if isComplete then
 		pin.style = "normal";
-		
 		-- If the quest is super tracked we want to show the selected circle behind it.
 		if ( isSuperTracked ) then
-			if isWaypoint then
-				pin.Number:SetTexCoord(0, 1.0, 0, 1.0);
-				pin.Number:SetAtlas("poi-traveldirections-arrow");
-
-				-- We want the asset to be 13x17, but we need this to work right with scaling. Experimentally determined, (13 * 2.5) x (17 * 2.5)
-				pin.Number:SetSize(32.5, 42.5);
-			else
-				local questCompleteIcon = GetQuestCompleteIcon(questID);
-				pin.Number:SetTexCoord(0, 0.5, 0, 0.5);
-				pin.Number:SetTexture(questCompleteIcon);
-				pin.Number:SetSize(74, 74);
-			end
-
 			pin.Texture:SetSize(89, 90);
 			pin.PushedTexture:SetSize(89, 90);
 			pin.Highlight:SetSize(89, 90);
+			pin.Number:SetSize(74, 74);
 			pin.Number:ClearAllPoints();
 			pin.Number:SetPoint("CENTER", -1, -1);
 			pin.Texture:SetTexture("Interface/WorldMap/UI-QuestPoi-NumberIcons");
@@ -201,35 +170,20 @@ function QuestDataProviderMixin:AddQuest(questID, x, y, frameLevelOffset, isWayp
 			pin.PushedTexture:SetTexCoord(0.375, 0.500, 0.375, 0.5);
 			pin.Highlight:SetTexture("Interface/WorldMap/UI-QuestPoi-NumberIcons");
 			pin.Highlight:SetTexCoord(0.625, 0.750, 0.875, 1);
+			pin.Number:SetTexture("Interface/WorldMap/UI-WorldMap-QuestIcon");
+			pin.Number:SetTexCoord(0, 0.5, 0, 0.5);
 			pin.Number:Show();
 		else
-			if isWaypoint then
-				pin.Texture:SetTexCoord(0, 1.0, 0, 1.0);
-				pin.PushedTexture:SetTexCoord(0, 1.0, 0, 1.0);
-				pin.Highlight:SetTexCoord(0, 1.0, 0, 1.0);
-				pin.Texture:SetAtlas("poi-traveldirections-arrow");
-				pin.PushedTexture:SetAtlas("poi-traveldirections-arrow");
-				pin.Highlight:SetAtlas("poi-traveldirections-arrow");
-
-				-- We want the asset to be 13x17, but we need this to work right with scaling. Experimentally determined, (13 * 2.5) x (17 * 2.5)
-				pin.Number:SetSize(32.5, 42.5);
-				pin.Texture:SetSize(32.5, 42.5);
-				pin.PushedTexture:SetSize(32.5, 42.5);
-				pin.Highlight:SetSize(32.5, 42.5);
-			else
-				local questCompleteIcon = GetQuestCompleteIcon(questID);
-				pin.Number:SetSize(85, 85);
-				pin.Texture:SetSize(95, 95);
-				pin.PushedTexture:SetSize(95, 95);
-				pin.Highlight:SetSize(95, 95);
-				pin.Texture:SetTexCoord(0, 0.5, 0, 0.5);
-				pin.PushedTexture:SetTexCoord(0, 0.5, 0.5, 1);
-				pin.Highlight:SetTexCoord(0.5, 1, 0, 0.5);
-				pin.Texture:SetTexture(questCompleteIcon);
-				pin.PushedTexture:SetTexture(questCompleteIcon);
-				pin.Highlight:SetTexture(questCompleteIcon);
-			end
-
+			pin.Texture:SetSize(95, 95);
+			pin.PushedTexture:SetSize(95, 95);
+			pin.Highlight:SetSize(95, 95);
+			pin.Number:SetSize(85, 85);
+			pin.Texture:SetTexture("Interface/WorldMap/UI-WorldMap-QuestIcon");
+			pin.PushedTexture:SetTexture("Interface/WorldMap/UI-WorldMap-QuestIcon");
+			pin.Highlight:SetTexture("Interface/WorldMap/UI-WorldMap-QuestIcon");
+			pin.Texture:SetTexCoord(0, 0.5, 0, 0.5);
+			pin.PushedTexture:SetTexCoord(0, 0.5, 0.5, 1);
+			pin.Highlight:SetTexCoord(0.5, 1, 0, 0.5);
 			pin.moveHighlightOnMouseDown = true;
 			pin.Number:Hide();
 		end
@@ -283,27 +237,22 @@ function QuestPinMixin:OnLoad()
 end
 
 function QuestPinMixin:OnMouseEnter()
-	local questID = self.questID;
-	local questLogIndex = GetQuestLogIndexByID(questID);
+	local questLogIndex = GetQuestLogIndexByID(self.questID);
 	local title = GetQuestLogTitle(questLogIndex);
-	GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 5, 2);
-	GameTooltip:SetText(title);
-	QuestUtils_AddQuestTypeToTooltip(GameTooltip, questID, NORMAL_FONT_COLOR);
+	WorldMapTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 5, 2);
+	WorldMapTooltip:SetText(title);
+	QuestUtils_AddQuestTypeToTooltip(WorldMapTooltip, self.questID, NORMAL_FONT_COLOR);
 
-	local wouldShowWaypointText = questID == GetSuperTrackedQuestID() or questID == QuestMapFrame_GetFocusedQuestID();
-	local waypointText = wouldShowWaypointText and C_QuestLog.GetNextWaypointText(questID);
-	if waypointText then
-		GameTooltip_AddColoredLine(GameTooltip, QUEST_DASH..waypointText, HIGHLIGHT_FONT_COLOR);
-	elseif poiButton and poiButton.style ~= "numeric" then
+	if poiButton and poiButton.style ~= "numeric" then
 		local completionText = GetQuestLogCompletionText(questLogIndex) or QUEST_WATCH_QUEST_READY;
-		GameTooltip:AddLine(QUEST_DASH..completionText, 1, 1, 1, true);
+		WorldMapTooltip:AddLine(QUEST_DASH..completionText, 1, 1, 1, true);
 	else
 		local numItemDropTooltips = GetNumQuestItemDrops(questLogIndex);
 		if numItemDropTooltips > 0 then
 			for i = 1, numItemDropTooltips do
 				local text, objectiveType, finished = GetQuestLogItemDrop(i, questLogIndex);
 				if ( text and not finished ) then
-					GameTooltip:AddLine(QUEST_DASH..text, 1, 1, 1, true);
+					WorldMapTooltip:AddLine(QUEST_DASH..text, 1, 1, 1, true);
 				end
 			end
 		else
@@ -311,17 +260,17 @@ function QuestPinMixin:OnMouseEnter()
 			for i = 1, numObjectives do
 				local text, objectiveType, finished = GetQuestLogLeaderBoard(i, questLogIndex);
 				if ( text and not finished ) then
-					GameTooltip:AddLine(QUEST_DASH..text, 1, 1, 1, true);
+					WorldMapTooltip:AddLine(QUEST_DASH..text, 1, 1, 1, true);
 				end
 			end
 		end
 	end
-	GameTooltip:Show();
-	self:GetMap():TriggerEvent("SetHighlightedQuestPOI", questID);
+	WorldMapTooltip:Show();
+	self:GetMap():TriggerEvent("SetHighlightedQuestPOI", self.questID);
 end
 
 function QuestPinMixin:OnMouseLeave()
-	GameTooltip:Hide();
+	WorldMapTooltip:Hide();
 	self:GetMap():TriggerEvent("ClearHighlightedQuestPOI");
 end
 

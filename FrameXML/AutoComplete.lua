@@ -139,7 +139,7 @@ function AutoComplete_OnLoad(self)
 	AutoCompleteInstructions:SetText("|cffbbbbbb"..PRESS_TAB.."|r");
 	C_Timer.After(5, function()
 		if ( IsInGuild() ) then
-			C_GuildInfo.GuildRoster();
+			GuildRoster();
 		end
 	end);
 end
@@ -355,27 +355,11 @@ end
 
 function AutoCompleteEditBox_OnTextChanged(self, userInput)
     if ( userInput ) then
-		if self.disallowAutoComplete then
-			AutoComplete_HideIfAttachedTo(self);
-		else
-			AutoComplete_Update(self, self:GetText(), self:GetUTF8CursorPosition());
-		end
+        AutoComplete_Update(self, self:GetText(), self:GetUTF8CursorPosition());
     end
     if(self:GetText() == "") then
         AutoComplete_HideIfAttachedTo(self);
     end
-end
-
-function AutoCompleteEditBox_OnKeyDown(self, key)
-	if ( key == "BACKSPACE" ) then
-		self.disallowAutoComplete = true;
-	end
-end
-
-function AutoCompleteEditBox_OnKeyUp(self, key)
-	if ( key == "BACKSPACE" ) then
-		self.disallowAutoComplete = false;
-	end
 end
 
 function AutoCompleteEditBox_AddHighlightedText(editBox, text)
@@ -429,7 +413,10 @@ function AutoCompleteButton_OnClick(self)
 	if (editBox.command) then
 		newText = editBox.command.." "..name;
 	else
-		newText = name;
+		newText = string.gsub(editBoxText, AUTOCOMPLETE_SIMPLE_REGEX,
+			string.format(AUTOCOMPLETE_SIMPLE_FORMAT_REGEX, name,
+				string.match(editBoxText, AUTOCOMPLETE_SIMPLE_REGEX)),
+				1);
 	end
 	
 	if ( editBox.addSpaceToAutoComplete ) then

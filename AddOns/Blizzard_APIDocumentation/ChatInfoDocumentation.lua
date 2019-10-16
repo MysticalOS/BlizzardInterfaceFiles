@@ -7,6 +7,20 @@ local ChatInfo =
 	Functions =
 	{
 		{
+			Name = "CanReportPlayer",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "playerLocation", Type = "table", Mixin = "PlayerLocationMixin", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "canReport", Type = "bool", Nilable = false },
+			},
+		},
+		{
 			Name = "GetChannelRosterInfo",
 			Type = "Function",
 
@@ -22,20 +36,6 @@ local ChatInfo =
 				{ Name = "owner", Type = "bool", Nilable = false },
 				{ Name = "moderator", Type = "bool", Nilable = false },
 				{ Name = "guid", Type = "string", Nilable = false },
-			},
-		},
-		{
-			Name = "GetClubStreamIDs",
-			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "clubID", Type = "string", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "ids", Type = "table", InnerType = "string", Nilable = false },
 			},
 		},
 		{
@@ -114,23 +114,18 @@ local ChatInfo =
 			},
 		},
 		{
-			Name = "ReplaceIconAndGroupExpressions",
+			Name = "ReportPlayer",
 			Type = "Function",
 
 			Arguments =
 			{
-				{ Name = "input", Type = "string", Nilable = false },
-				{ Name = "noIconReplacement", Type = "bool", Nilable = true },
-				{ Name = "noGroupReplacement", Type = "bool", Nilable = true },
-			},
-
-			Returns =
-			{
-				{ Name = "output", Type = "string", Nilable = false },
+				{ Name = "complaintType", Type = "string", Nilable = false },
+				{ Name = "playerLocation", Type = "table", Mixin = "PlayerLocationMixin", Nilable = true },
+				{ Name = "comment", Type = "string", Nilable = true },
 			},
 		},
 		{
-			Name = "ResetDefaultZoneChannels",
+			Name = "ReportServerLag",
 			Type = "Function",
 		},
 		{
@@ -167,16 +162,6 @@ local ChatInfo =
 			Returns =
 			{
 				{ Name = "success", Type = "bool", Nilable = false },
-			},
-		},
-		{
-			Name = "SwapChatChannelsByChannelIndex",
-			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "firstChannelIndex", Type = "number", Nilable = false },
-				{ Name = "secondChannelIndex", Type = "number", Nilable = false },
 			},
 		},
 	},
@@ -1964,9 +1949,10 @@ local ChatInfo =
 			Payload =
 			{
 				{ Name = "mapname", Type = "string", Nilable = false },
-				{ Name = "timeLeft", Type = "number", Nilable = false },
+				{ Name = "daysLeft", Type = "number", Nilable = false },
+				{ Name = "hoursLeft", Type = "number", Nilable = false },
+				{ Name = "minutesLeft", Type = "number", Nilable = false },
 				{ Name = "locked", Type = "number", Nilable = false },
-				{ Name = "extended", Type = "number", Nilable = false },
 			},
 		},
 		{

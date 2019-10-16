@@ -5,26 +5,6 @@ function ModelPreviewFrame_OnLoad(self)
 	self:RegisterEvent("UI_MODEL_SCENE_INFO_UPDATED");
 end
 
-function ModelPreviewFrame_OnShow(self)
-	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);
-
-	local camera = self.Display.ModelScene:GetActiveCamera();
-	if camera then
-		camera:SetRightMouseButtonXMode(ORBIT_CAMERA_MOUSE_PAN_HORIZONTAL, true);
-		camera:SetRightMouseButtonYMode(ORBIT_CAMERA_MOUSE_PAN_VERTICAL, true);
-	end
-end
-
-function ModelPreviewFrame_OnHide(self)
-	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);
-
-	local camera = self.Display.ModelScene:GetActiveCamera();
-	if camera then
-		camera:SetRightMouseButtonXMode(ORBIT_CAMERA_MOUSE_MODE_NOTHING);
-		camera:SetRightMouseButtonYMode(ORBIT_CAMERA_MOUSE_MODE_NOTHING);
-	end
-end
-
 function ModelPreviewFrame_SetStyle(self, style)
 	self.style = style;
 	if style == "carousel" then
@@ -50,38 +30,30 @@ end
 function ModelPreviewFrame_ShowModels(displayInfoEntries, allowZoom, forceUpdate)
 	local self = ModelPreviewFrame;
 	self.displayInfoEntries = displayInfoEntries;
-
-	if #displayInfoEntries > 1 then
-		ModelPreviewFrame_SetStyle(self, "carousel");
-	else
-		ModelPreviewFrame_SetStyle(self, nil);
-	end
+	ModelPreviewFrame_SetStyle(self, "carousel");
 	ModelPreviewFrame_SetCarouselIndex(self, 1, allowZoom, forceUpdate);
 end
 
 function ModelPreviewFrame_ShowModel(displayID, modelSceneID, allowZoom, forceUpdate)
 	local self = ModelPreviewFrame;
-	local displayInfoEntry = self.displayInfoEntries[self.carouselIndex];
-	local itemModifiedAppearanceIDs = displayInfoEntry.itemModifiedAppearanceIDs;
-
+	self.displayInfoEntries = nil;
 	ModelPreviewFrame_SetStyle(self, nil);
-	ModelPreviewFrame_ShowModelInternal(displayID, modelSceneID, allowZoom, forceUpdate, itemModifiedAppearanceIDs);
+	ModelPreviewFrame_ShowModelInternal(displayID, modelSceneID, allowZoom, forceUpdate);
 end
 
-function ModelPreviewFrame_ShowModelInternal(displayID, modelSceneID, allowZoom, forceUpdate, itemModifiedAppearanceIDs)
+function ModelPreviewFrame_ShowModelInternal(displayID, modelSceneID, allowZoom, forceUpdate)
 	local display = ModelPreviewFrame.Display;
 	display.displayID = displayID;
 	display.modelSceneID = modelSceneID;
 	display.allowZoom = allowZoom;
-	display.ModelScene:ClearScene();
 	display.ModelScene:SetFromModelSceneID(modelSceneID, forceUpdate);
 
-	if displayID and displayID > 0 then
-		local actor = display.ModelScene:GetActorByTag("item");
-		SetupItemPreviewActor(actor, displayID);
-	else
-		SetupPlayerForModelScene(display.ModelScene, itemModifiedAppearanceIDs);
+	local item = display.ModelScene:GetActorByTag("item");
+	if ( item ) then
+		item:SetModelByCreatureDisplayID(displayID);
+		item:SetAnimationBlendOperation(LE_MODEL_BLEND_OPERATION_NONE);
 	end
+
 	ModelPreviewFrame:Show();
 end
 
@@ -98,7 +70,7 @@ function ModelPreviewFrame_SetCarouselIndex(self, index, allowZoom, forceUpdate)
 	self.Display.CarouselText:SetText(MODEL_PREVIEW_FRAME_CAROUSEL_TEXT_FORMAT:format(self.carouselIndex, #self.displayInfoEntries));
 	
 	local displayInfoEntry = self.displayInfoEntries[self.carouselIndex];
-	ModelPreviewFrame_ShowModelInternal(displayInfoEntry.creatureDisplayInfoID, displayInfoEntry.modelSceneID, allowZoom, forceUpdate, displayInfoEntry.itemModifiedAppearanceIDs);
+	ModelPreviewFrame_ShowModelInternal(displayInfoEntry.creatureDisplayInfoID, displayInfoEntry.modelSceneID, allowZoom, forceUpdate);
 	self.Display.Name:SetText(displayInfoEntry.title);
 end
 

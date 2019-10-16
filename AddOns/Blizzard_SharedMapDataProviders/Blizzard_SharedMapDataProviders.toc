@@ -20,8 +20,6 @@ StorylineQuestDataProvider.xml
 EncounterJournalDataProvider.xml
 FogOfWarDataProvider.xml
 DeathMapDataProvider.xml
-QuestBlobDataProvider.xml
-ScenarioDataProvider.xml
 VignetteDataProvider.xml
 InvasionDataProvider.xml
 GossipDataProvider.xml
@@ -34,5 +32,3 @@ BannerDataProvider.xml
 ContributionCollectorDataProvider.xml
 MapLinkDataProvider.xml
 SelectableGraveyardDataProvider.xml
-MapIndicatorQuestDataProvider.xml
-QuestSessionDataProvider.lua

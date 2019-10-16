@@ -1,64 +1,3 @@
-GossipTitleButtonMixin = {}
-
-function GossipTitleButtonMixin:OnHide()
-	self:CancelCallback();
-	self.ClearData();
-end
-
-function GossipTitleButtonMixin:CancelCallback()
-	if self.cancelCallback then
-		self.cancelCallback();
-		self.cancelCallback = nil;
-	end
-end
-
-function GossipTitleButtonMixin:AddCallbackForQuest(questID, cb)
-	self:CancelCallback();
-	self.cancelCallback = QuestEventListener:AddCancelableCallback(questID, cb);
-end
-
-function GossipTitleButtonMixin:SetQuest(titleText, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored, questID)
-	if ( isLegendary ) then
-		self.Icon:SetTexture("Interface/GossipFrame/AvailableLegendaryQuestIcon");
-	elseif ( frequency == LE_QUEST_FREQUENCY_DAILY or frequency == LE_QUEST_FREQUENCY_WEEKLY ) then
-		self.Icon:SetTexture("Interface/GossipFrame/DailyQuestIcon");
-	elseif ( isRepeatable ) then
-		self.Icon:SetTexture("Interface/GossipFrame/DailyActiveQuestIcon");
-	else
-		self.Icon:SetTexture("Interface/GossipFrame/AvailableQuestIcon");
-	end
-
-	self:UpdateTitleForQuest(questID, titleText, isIgnored, isTrivial);
-end
-
-function GossipTitleButtonMixin:SetActiveQuest(titleText, level, isTrivial, isComplete, isLegendary, isIgnored, questID)
-	if isComplete then
-		if isLegendary then
-			self.Icon:SetTexture("Interface/GossipFrame/ActiveLegendaryQuestIcon");
-		else
-			self.Icon:SetTexture("Interface/GossipFrame/ActiveQuestIcon");
-		end
-	else
-		self.Icon:SetTexture("Interface/GossipFrame/IncompleteQuestIcon");
-	end
-
-	self:UpdateTitleForQuest(questID, titleText, isIgnored, isTrivial);
-end
-
-function GossipTitleButtonMixin:UpdateTitleForQuest(questID, titleText, isIgnored, isTrivial)
-	if ( isIgnored ) then
-		self:SetFormattedText(IGNORED_QUEST_DISPLAY, titleText);
-		self.Icon:SetVertexColor(0.5,0.5,0.5);
-	elseif ( isTrivial ) then
-		self:SetFormattedText(TRIVIAL_QUEST_DISPLAY, titleText);
-		self.Icon:SetVertexColor(0.5,0.5,0.5);
-	else
-		self:SetFormattedText(NORMAL_QUEST_DISPLAY, titleText);
-		self.Icon:SetVertexColor(1,1,1);
-	end
-
-	GossipResize(self);
-end
 
 NUMGOSSIPBUTTONS = 32;
 
@@ -134,15 +73,17 @@ end
 
 function GossipFrameAvailableQuestsUpdate(...)
 	local titleIndex = 1;
-
-	for i=1, select("#", ...), 8 do
+	
+	for i=1, select("#", ...), 7 do
 		if ( GossipFrame.buttonIndex > NUMGOSSIPBUTTONS ) then
 			message("This NPC has too many quests and/or gossip options.");
 		end
 		local titleButton = _G["GossipTitleButton" .. GossipFrame.buttonIndex];
-
-		titleButton:SetQuest(select(i, ...));
-
+		local titleButtonIcon = _G[titleButton:GetName() .. "GossipIcon"];
+		local titleText, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored = select(i, ...);
+		titleButtonIcon:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon");
+		titleButton:SetFormattedText(NORMAL_QUEST_DISPLAY, titleText);
+		GossipResize(titleButton);
 		titleButton:SetID(titleIndex);
 		titleButton.type="Available";
 		GossipFrame.buttonIndex = GossipFrame.buttonIndex + 1;
@@ -162,16 +103,17 @@ function GossipFrameActiveQuestsUpdate(...)
 	local titleButtonIcon;
 	local numActiveQuestData = select("#", ...);
 	GossipFrame.hasActiveQuests = (numActiveQuestData > 0);
-	for i=1, numActiveQuestData, 7 do
+	for i=1, numActiveQuestData, 6 do
 		if ( GossipFrame.buttonIndex > NUMGOSSIPBUTTONS ) then
 			message("This NPC has too many quests and/or gossip options.");
 		end
 		titleButton = _G["GossipTitleButton" .. GossipFrame.buttonIndex];
-		titleButton:SetActiveQuest(select(i, ...));
-
+		titleButtonIcon = _G[titleButton:GetName() .. "GossipIcon"];
+		titleButton:SetFormattedText(NORMAL_QUEST_DISPLAY, select(i, ...));
+		GossipResize(titleButton);
 		titleButton:SetID(titleIndex);
 		titleButton.type="Active";
-
+		titleButtonIcon:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon");	
 		GossipFrame.buttonIndex = GossipFrame.buttonIndex + 1;
 		titleIndex = titleIndex + 1;
 		titleButton:Show();
@@ -210,7 +152,7 @@ function GossipResize(titleButton)
 end
 
 function NPCFriendshipStatusBar_Update(frame, factionID --[[ = nil ]])
-	local statusBar = NPCFriendshipStatusBar;
+	--[[local statusBar = NPCFriendshipStatusBar;
 	local id, rep, maxRep, name, text, texture, reaction, threshold, nextThreshold = GetFriendshipReputation(factionID);
 	statusBar.friendshipFactionID = id;
 	if ( id and id > 0 ) then
@@ -231,7 +173,7 @@ function NPCFriendshipStatusBar_Update(frame, factionID --[[ = nil ]])
 		statusBar:Show();
 	else
 		statusBar:Hide();
-	end
+	end]]
 end
 
 function NPCFriendshipStatusBar_OnEnter(self)

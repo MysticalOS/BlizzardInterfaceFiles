@@ -56,6 +56,34 @@
 			</OnLoad>
 		</Scripts>
 	</Frame>
+	<Frame name="ChatConfigTextBoxTemplate" inherits="ChatConfigBoxTemplate" virtual="true">
+		<Size x="270" y="26"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentText" parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="8" y="1"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+	<Frame name="ChatConfigTextBoxTemplateWithButton" inherits="ChatConfigTextBoxTemplate" virtual="true">
+		<Frames>
+			<Button name="$parentButton" parentKey="Button" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="110" y="20"/>
+				</Size>
+				<Anchors>
+					<Anchor point="RIGHT" x="-8" y="0"/>
+				</Anchors>
+			</Button>
+		</Frames>
+	</Frame>
 	<Frame name="ChatConfigBoxWithHeaderTemplate" inherits="ChatConfigBoxTemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -102,7 +130,7 @@
 				if ( self.func ) then
 					self.func(self, checked);
 				end
-
+				
 				ChatConfigFrame_PlayCheckboxSound(checked);
 			</OnClick>
 			<OnEnter>
@@ -440,6 +468,17 @@
 		<Anchors>
 			<Anchor point="CENTER"/>
 		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+		</Backdrop>
 		<Layers>
 			<Layer level="ARTWORK">
 				<Texture name="ChatConfigFrameHeader" file="Interface\DialogFrame\UI-DialogBox-Header">
@@ -463,7 +502,6 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
 			<Frame name="ChatConfigCategoryFrame" inherits="ChatConfigBoxTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
@@ -570,6 +608,14 @@
 						<Size x="10" y="10"/>
 						<Anchors>
 							<Anchor point="TOPLEFT" x="13" y="-30"/>
+						</Anchors>
+					</Frame>
+					<Frame name="$parentAvailable" inherits="ChatConfigBoxWithHeaderTemplate">
+						<Size x="10" y="10"/>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentLeft" relativePoint="BOTTOMLEFT">
+								<Offset x="0" y="-25"/>
+							</Anchor>
 						</Anchors>
 					</Frame>
 				</Frames>
@@ -772,7 +818,7 @@
 									</OnClick>
 									<OnEnter>
 										GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-										GameTooltip_SetTitle(GameTooltip, MOVE_FILTER_UP);
+										GameTooltip_AddNewbieTip(self, MOVE_FILTER_UP, 1.0, 1.0, 1.0);
 									</OnEnter>
 									<OnLeave function="GameTooltip_Hide"/>
 								</Scripts>
@@ -802,7 +848,7 @@
 									</OnClick>
 									<OnEnter>
 										GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-										GameTooltip_SetTitle(GameTooltip, MOVE_FILTER_DOWN);
+										GameTooltip_AddNewbieTip(self, MOVE_FILTER_DOWN, 1.0, 1.0, 1.0);
 									</OnEnter>
 									<OnLeave function="GameTooltip_Hide"/>
 								</Scripts>
@@ -1069,7 +1115,7 @@
 													CHATCONFIG_SELECTED_FILTER.settings.schoolNameHighlighting = false;
 												end
 												CombatConfig_Colorize_Update();
-												ChatConfigFrame_PlayCheckboxSound(checked);
+												ChatConfigFrame_PlayCheckboxSound(checked);											
 											</OnClick>
 										</Scripts>
 									</CheckButton>
@@ -1582,109 +1628,10 @@
 									</OnClick>
 								</Scripts>
 							</CheckButton>
-							<CheckButton name="$parentShowBraces" inherits="ChatConfigCheckButtonTemplate">
-								<Size>
-									<AbsDimension x="24" y="24"/>
-								</Size>
+							<CheckButton name="$parentFullText" inherits="ChatConfigCheckButtonTemplate">
 								<Anchors>
 									<Anchor point="TOPLEFT" relativeTo="$parentShowTimeStamp" relativePoint="BOTTOMLEFT">
 										<Offset x="0" y="-15"/>
-									</Anchor>
-								</Anchors>
-								<Scripts>
-									<OnLoad>
-										_G[self:GetName().."Text"]:SetText(SHOW_BRACES);
-										self.tooltip = SHOW_BRACES_COMBATLOG_TOOLTIP;
-									</OnLoad>
-									<OnClick>
-										local checked = self:GetChecked()
-										if ( checked ) then
-											CHATCONFIG_SELECTED_FILTER.settings.braces = true;
-										else
-											CHATCONFIG_SELECTED_FILTER.settings.braces = false;
-										end
-										CombatConfig_Formatting_Update();
-										ChatConfigFrame_PlayCheckboxSound(checked);
-									</OnClick>
-								</Scripts>
-							</CheckButton>
-							<CheckButton name="$parentUnitNames" inherits="ChatConfigSmallCheckButtonTemplate">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parentShowBraces" relativePoint="BOTTOMLEFT">
-										<Offset x="10" y="0"/>
-									</Anchor>
-								</Anchors>
-								<Scripts>
-									<OnLoad>
-										_G[self:GetName().."Text"]:SetText(UNIT_NAMES);
-										self.tooltip = UNIT_NAMES_SHOW_BRACES_COMBATLOG_TOOLTIP;
-									</OnLoad>
-									<OnClick>
-										local checked = self:GetChecked()
-										if ( checked ) then
-											CHATCONFIG_SELECTED_FILTER.settings.unitBraces = true;
-											CHATCONFIG_SELECTED_FILTER.settings.sourceBraces = true;
-											CHATCONFIG_SELECTED_FILTER.settings.destBraces = true;
-										else
-											CHATCONFIG_SELECTED_FILTER.settings.unitBraces = false;
-											CHATCONFIG_SELECTED_FILTER.settings.sourceBraces = false;
-											CHATCONFIG_SELECTED_FILTER.settings.destBraces = false;
-										end
-										CombatConfig_Formatting_Update();
-										ChatConfigFrame_PlayCheckboxSound(checked);
-									</OnClick>
-								</Scripts>
-							</CheckButton>
-							<CheckButton name="$parentSpellNames" inherits="ChatConfigSmallCheckButtonTemplate">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parentUnitNames" relativePoint="BOTTOMLEFT">
-										<Offset x="0" y="-2"/>
-									</Anchor>
-								</Anchors>
-								<Scripts>
-									<OnLoad>
-										_G[self:GetName().."Text"]:SetText(SPELL_NAMES);
-										self.tooltip = SPELL_NAMES_SHOW_BRACES_COMBATLOG_TOOLTIP;
-									</OnLoad>
-									<OnClick>
-										local checked = self:GetChecked()
-										if ( checked ) then
-											CHATCONFIG_SELECTED_FILTER.settings.spellBraces = true;
-										else
-											CHATCONFIG_SELECTED_FILTER.settings.spellBraces = false;
-										end
-										CombatConfig_Formatting_Update();
-										ChatConfigFrame_PlayCheckboxSound(checked);
-									</OnClick>
-								</Scripts>
-							</CheckButton>
-							<CheckButton name="$parentItemNames" inherits="ChatConfigSmallCheckButtonTemplate">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parentSpellNames" relativePoint="BOTTOMLEFT">
-										<Offset x="0" y="-2"/>
-									</Anchor>
-								</Anchors>
-								<Scripts>
-									<OnLoad>
-										_G[self:GetName().."Text"]:SetText(ITEM_NAMES);
-										self.tooltip = ITEM_NAMES_SHOW_BRACES_COMBATLOG_TOOLTIP;
-									</OnLoad>
-									<OnClick>
-										local checked = self:GetChecked()
-										if ( checked ) then
-											CHATCONFIG_SELECTED_FILTER.settings.itemBraces = true;
-										else
-											CHATCONFIG_SELECTED_FILTER.settings.itemBraces = false;
-										end
-										CombatConfig_Formatting_Update();
-										ChatConfigFrame_PlayCheckboxSound(checked);
-									</OnClick>
-								</Scripts>
-							</CheckButton>
-							<CheckButton name="$parentFullText" inherits="ChatConfigCheckButtonTemplate">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parentItemNames" relativePoint="BOTTOMLEFT">
-										<Offset x="-10" y="-13"/>
 									</Anchor>
 								</Anchors>
 								<Scripts>
@@ -1875,7 +1822,10 @@
 				<Scripts>
 					<OnLoad function="ChatConfigCombat_OnLoad"/>
 					<OnShow function="ChatConfigCombat_OnShow"/>
-					<OnHide function="ChatConfigCombat_OnHide"/>
+					<OnHide>
+						ChatConfigBackgroundFrame:SetPoint("TOPLEFT", ChatConfigCategoryFrame, "TOPRIGHT", 1, 0);
+						ChatConfig_HideCombatTabs();
+					</OnHide>
 				</Scripts>
 			</Frame>
 			<Button name="$parentDefaultButton" parentKey="DefaultButton" inherits="UIPanelButtonTemplate" text="CHAT_DEFAULTS">

@@ -14,7 +14,6 @@ local UNIT_FRAME_COMPONENT_NAMES = {
 
 	"DefensiveCooldownContainer",
 	"OffensiveCooldownContainer",
-	"DebuffContainer",
 
 	"OffensiveCooldownModel",
 	"DefensiveCooldownModel",
@@ -236,7 +235,7 @@ local BASE_LAYOUT = {
 	},
 
 	DefensiveCooldownContainer = {
-		-- Width is calculated from child extents
+		width = 182,
 		height = 34,
 
 		points = {
@@ -244,23 +243,13 @@ local BASE_LAYOUT = {
 		},
 		enabled = true,
 	},
-	
-	DebuffContainer = {
-		-- Width is calculated from child extents
-		height = 34,
-
-		points = {
-			CreatePoint("TOPLEFT", "DefensiveCooldownContainer", "TOPRIGHT", 0, 0),
-		},
-		enabled = true,
-	},
 
 	OffensiveCooldownContainer = {
-		-- Width is calculated from child extents
+		width = 182,
 		height = 34,
 
 		points = {
-			CreatePoint("TOPLEFT", "DefensiveCooldownContainer", "BOTTOMLEFT", 0, -15),
+			CreatePoint("TOP", "DefensiveCooldownContainer", "BOTTOM", 0, -15),
 		},
 		enabled = true,
 	},
@@ -387,19 +376,7 @@ local RIGHT_LAYOUT = {
 
 	DefensiveCooldownContainer = {
 		points = {
-			CreatePoint("TOPRIGHT", "UnitFrame", "BOTTOMRIGHT", -25, -15),
-		},
-	},
-
-	DebuffContainer = {
-		points = {
-			CreatePoint("TOPRIGHT", "DefensiveCooldownContainer", "TOPLEFT", 0, 0),
-		},
-	},
-
-	OffensiveCooldownContainer = {
-		points = {
-			CreatePoint("TOPRIGHT", "DefensiveCooldownContainer", "BOTTOMRIGHT", 0, -15),
+			CreatePoint("TOPLEFT", "UnitFrame", "BOTTOMLEFT", 5, -15),
 		},
 	},
 };

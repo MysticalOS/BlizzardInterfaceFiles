@@ -34,15 +34,14 @@
 		</PushedTexture>
 	</Button>
 	<Frame name="CachedLoginFrameTemplate" virtual="true" parentArray="Frames" hidden="true">
-		<Size x="235" y="45"/>
+		<Size x="230" y="45"/>
 		<Frames>
-			<Button parentKey="LoginButton" inherits="GlueButtonTemplateBlue, TruncatedButtonTemplate">
+			<Button parentKey="LoginButton" inherits="GlueButtonTemplateBlue">
 				<Size x="220" y="45"/>
 				<Anchors>
 					<Anchor point="LEFT"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad function="CachedLoginButton_OnLoad"/>
 					<OnClick function="CachedLoginButton_OnClick"/>
 					<OnUpdate>
 						self:SetEnabled(C_Login.IsLoginReady());
@@ -52,9 +51,10 @@
 					<AbsInset left="20" right="20" top="10" bottom="10"/>
 				</HitRectInsets>
 			</Button>
-			<Button parentKey="DeleteButton" inherits="GlueCloseButton">
+			<Button parentKey="DeleteButton" inherits="GlueButtonTemplateBlue" text="X">
+				<Size x="30" y="45"/>
 				<Anchors>
-					<Anchor point="RIGHT" x="0" y="2"/>
+					<Anchor point="RIGHT"/>
 				</Anchors>
 				<Scripts>
 					<OnClick function="CachedLoginDeleteButton_OnClick"/>
@@ -62,6 +62,9 @@
 						self:SetEnabled(C_Login.IsLoginReady());
 					</OnUpdate>
 				</Scripts>
+				<HitRectInsets>
+					<AbsInset left="0" right="0" top="10" bottom="10"/>
+				</HitRectInsets>
 			</Button>
 		</Frames>
 	</Frame>
@@ -71,6 +74,17 @@
 			<Anchor point="TOPLEFT" x="0" y="0"/>
 			<Anchor point="BOTTOMRIGHT" x="0" y="0"/>
 		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+		</Backdrop>
 		<Layers>
 			<Layer level="ARTWORK">
 				<Texture name="KoreanRatingsViolence" file="Interface\Glues\Login\Glues-KoreanRating-3">
@@ -105,9 +119,6 @@
 				</FontString>
 			</Layer>
 		</Layers>
-		<Frames>
-			<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
-		</Frames>
 		<Scripts>
 			<OnLoad function="KoreanRatings_OnLoad"/>
 			<OnEvent function="KoreanRatings_OnEvent"/>
@@ -123,7 +134,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<ModelFFX name="LoginBackgroundModel" setAllPoints="true" fogNear="0" fogFar="1200" glow="0.08">
+			<ModelFFX name="LoginBackgroundModel" setAllPoints="true" fogNear="0" fogFar="1200" glow="0.30">
 				<FogColor r="0.25" g="0.06" b="0.015"/>
 			</ModelFFX>
 			<Frame parentKey="UI" setAllPoints="true">
@@ -150,7 +161,7 @@
 						<Texture parentKey="GameLogo">
 							<Size x="256" y="128"/>
 							<Anchors>
-								<Anchor point="TOPLEFT" x="3" y="-7"/>
+								<Anchor point="TOPLEFT" x="8" y="-16"/>
 							</Anchors>
 						</Texture>
 						<Texture name="WorldOfWarcraftRating" hidden="true">
@@ -163,9 +174,9 @@
 				</Layers>
 				<Frames>
 					<EditBox parentKey="AccountEditBox" parentArray="NormalLoginRegions" letters="320">
-						<Size x="200" y="37"/>
+						<Size x="160" y="37"/>
 						<Anchors>
-							<Anchor point="BOTTOM" x="0" y="345"/>
+							<Anchor point="BOTTOM" x="8" y="345"/>
 						</Anchors>
 						<Layers>
 							<Layer level="BACKGROUND">
@@ -181,7 +192,7 @@
 										</Anchor>
 									</Anchors>
 								</FontString>
-								<FontString parentKey="Fill" inherits="GlueFontDisableSmall" justifyH="LEFT" justifyV="MIDDLE">
+								<!--<FontString parentKey="Fill" inherits="GlueFontDisableSmall" justifyH="LEFT" justifyV="MIDDLE" text="ENTER_YOUR_EMAIL">
 									<Anchors>
 										<Anchor point="CENTER" relativePoint="CENTER">
 											<Offset>
@@ -189,7 +200,7 @@
 											</Offset>
 										</Anchor>
 									</Anchors>
-								</FontString>
+								</FontString>-->
 							</Layer>
 						</Layers>
 						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Glues\Common\Glue-Tooltip-Border" tile="true">
@@ -220,11 +231,11 @@
 									ClearSavedAccountList();
 									AccountLogin_UpdateSavedData(AccountLogin);
 								end
-								if ( self:GetText() ~= "" ) then
+								--[[if ( self:GetText() ~= "" ) then
 									self.Fill:Hide();
 								else
 									self.Fill:Show();
-								end
+								end]]
 							</OnTextChanged>
 						</Scripts>
 						<FontString inherits="GlueEditBoxFont"/>
@@ -233,9 +244,9 @@
 						</TextInsets>
 					</EditBox>
 					<EditBox parentKey="PasswordEditBox" parentArray="NormalLoginRegions" letters="16" password="1">
-						<Size x="200" y="37"/>
+						<Size x="160" y="37"/>
 						<Anchors>
-							<Anchor point="BOTTOM" x="0" y="275"/>
+							<Anchor point="BOTTOM" x="8" y="270"/>
 						</Anchors>
 						<Layers>
 							<Layer level="BACKGROUND">
@@ -287,9 +298,9 @@
 						</Anchors>
 					</Frame>
 					<Button parentKey="LoginButton" parentArray="NormalLoginRegions" inherits="GlueButtonTemplateBlue" text="LOGIN">
-						<Size x="220" y="45"/>
+						<Size x="170" y="45"/>
 						<Anchors>
-							<Anchor point="BOTTOM" x="0" y="170"/>
+							<Anchor point="BOTTOM" x="10" y="249"/>
 						</Anchors>
 						<Scripts>
 							<OnClick function="AccountLogin_Login"/>
@@ -302,54 +313,6 @@
 							</OnUpdate>
 						</Scripts>
 					</Button>
-					<CheckButton parentKey="SaveAccountNameCheckButton" parentArray="NormalLoginRegions">
-						<Size x="20" y="20"/>
-						<Layers>
-							<Layer level="ARTWORK">
-								<FontString parentKey="Label" inherits="GlueFontNormalSmall" text="SAVE_ACCOUNT_NAME">
-									<Anchors>
-										<Anchor point="LEFT" x="20" y="0"/>
-									</Anchors>
-									<FontHeight>
-										<AbsValue val="10"/>
-									</FontHeight>
-									<Shadow>
-										<Offset>
-											<AbsDimension x="1" y="-1"/>
-										</Offset>
-										<Color r="0" g="0" b="0"/>
-									</Shadow>
-									<Color color="NORMAL_FONT_COLOR"/>
-								</FontString>
-							</Layer>
-						</Layers>
-						<Scripts>
-							<OnLoad>
-								local width = self.Label:GetWidth();
-								self:SetPoint("TOP", self:GetParent().LoginButton, "BOTTOM", -width / 2, 0);
-								if ( GetSavedAccountName() ~= "" ) then
-									self:SetChecked(true);
-								else
-									self:SetChecked(false);
-								end
-							</OnLoad>
-							<OnClick>
-								if ( self:GetChecked() ) then
-									SetSavedAccountName("");
-									ClearSavedAccountList();
-									AccountLogin_UpdateSavedData(AccountLogin);
-									PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF);
-								else
-									PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-								end
-							</OnClick>
-						</Scripts>
-						<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
-						<HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
-						<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
-						<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
-					</CheckButton>
 					<Button parentKey="ExitButton" inherits="GlueButtonSmallTemplate" text="QUIT">
 						<Anchors>
 							<Anchor point="BOTTOMRIGHT" x="-5" y="29"/>
@@ -385,9 +348,9 @@
 							<OnClick function="GlueParent_ShowOptionsScreen"/>
 						</Scripts>
 					</Button>
-					<Button parentKey="CommunityButton" parentArray="NormalLoginRegions" inherits="GlueButtonSmallTemplate" text="COMMUNITY_SITE">
+					<Button name="AccountLoginCommunityButton" parentKey="CommunityButton" parentArray="NormalLoginRegions" inherits="GlueButtonSmallTemplate" text="COMMUNITY_SITE">
 						<Anchors>
-							<Anchor point="BOTTOMLEFT" x="10" y="84"/>
+							<Anchor point="BOTTOMLEFT" x="10" y="120"/>
 						</Anchors>
 						<Scripts>
 							<OnClick function="AccountLogin_LaunchCommunitySite"/>
@@ -409,6 +372,61 @@
 							<OnClick function="AccountLogin_ManageAccount"/>
 						</Scripts>
 					</Button>
+					<CheckButton parentKey="SaveAccountNameCheckButton" parentArray="NormalLoginRegions">
+						<Size x="20" y="20"/>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="AccountLoginCommunityButton" relativePoint="BOTTOMLEFT">
+								<Offset>
+									<AbsDimension x="7" y="-5"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString parentKey="Label" inherits="GlueFontNormalSmall" text="SAVE_ACCOUNT_NAME">
+									<Anchors>
+										<Anchor point="LEFT" x="24" y="0"/>
+									</Anchors>
+									<FontHeight>
+										<AbsValue val="10"/>
+									</FontHeight>
+									<Shadow>
+										<Offset>
+											<AbsDimension x="1" y="-1"/>
+										</Offset>
+										<Color r="0" g="0" b="0"/>
+									</Shadow>
+									<Color r="1.0" g="0.78" b="0"/>
+								</FontString>
+							</Layer>
+						</Layers>
+						<Scripts>
+							<OnLoad>
+								local width = self.Label:GetWidth();
+								self:SetPoint("TOP", self:GetParent().LoginButton, "BOTTOM", -width / 2, 0);
+								if ( GetSavedAccountName() ~= "" ) then
+									self:SetChecked(true);
+								else
+									self:SetChecked(false);
+								end
+							</OnLoad>
+							<OnClick>
+								if ( self:GetChecked() ) then
+									SetSavedAccountName("");
+									ClearSavedAccountList();
+									AccountLogin_UpdateSavedData(AccountLogin);
+									PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF);
+								else
+									PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+								end
+							</OnClick>
+						</Scripts>
+						<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
+						<PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
+						<HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
+						<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
+						<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
+					</CheckButton>
 					<Frame name="ServerAlertFrame" hidden="true" inherits="ServerAlertTemplate">
 						<Size>
 							<AbsDimension x="352" y="400"/>
@@ -435,6 +453,17 @@
 								<Anchors>
 									<Anchor point="CENTER" x="0" y="-20"/>
 								</Anchors>
+								<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+									<BackgroundInsets>
+										<AbsInset left="11" right="12" top="12" bottom="11"/>
+									</BackgroundInsets>
+									<TileSize>
+										<AbsValue val="32"/>
+									</TileSize>
+									<EdgeSize>
+										<AbsValue val="32"/>
+									</EdgeSize>
+								</Backdrop>
 								<Layers>
 									<Layer level="ARTWORK">
 										<FontString parentKey="Title" inherits="GlueFontNormal" text="WOW_ACCOUNTS">
@@ -450,7 +479,6 @@
 									</Layer>
 								</Layers>
 								<Frames>
-									<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
 									<Frame parentKey="Container">
 										<Anchors>
 											<Anchor point="TOPLEFT" x="12" y="-52"/>
@@ -589,6 +617,17 @@
 								<Anchors>
 									<Anchor point="CENTER" x="0" y="-20"/>
 								</Anchors>
+								<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+									<BackgroundInsets>
+										<AbsInset left="11" right="12" top="12" bottom="11"/>
+									</BackgroundInsets>
+									<TileSize>
+										<AbsValue val="32"/>
+									</TileSize>
+									<EdgeSize>
+										<AbsValue val="32"/>
+									</EdgeSize>
+								</Backdrop>
 								<Layers>
 									<Layer level="ARTWORK">
 										<FontString parentKey="Title" inherits="GlueFontNormal" text="ENTER_CAPTCHA_TITLE">
@@ -612,7 +651,6 @@
 									</Layer>
 								</Layers>
 								<Frames>
-									<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
 									<EditBox parentKey="EditBox" letters="16">
 										<Size x="160" y="37"/>
 										<Anchors>
@@ -690,10 +728,23 @@
 						</Layers>
 						<Frames>
 							<Frame parentKey="Background">
-								<Size x="372" y="200"/>
+								<Size>
+									<AbsDimension x="372" y="200"/>
+								</Size>
 								<Anchors>
 									<Anchor point="CENTER" x="0" y="-20"/>
 								</Anchors>
+								<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+									<BackgroundInsets>
+										<AbsInset left="11" right="12" top="12" bottom="11"/>
+									</BackgroundInsets>
+									<TileSize>
+										<AbsValue val="32"/>
+									</TileSize>
+									<EdgeSize>
+										<AbsValue val="32"/>
+									</EdgeSize>
+								</Backdrop>
 								<Layers>
 									<Layer level="ARTWORK">
 										<FontString parentKey="Title" inherits="GlueFontNormal" text="ENTER_AUTHCODE_TITLE">
@@ -709,7 +760,6 @@
 									</Layer>
 								</Layers>
 								<Frames>
-									<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
 									<EditBox parentKey="EditBox" letters="16">
 										<Size x="160" y="37"/>
 										<Anchors>

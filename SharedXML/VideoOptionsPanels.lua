@@ -187,13 +187,6 @@ function Graphics_Refresh(self)
 	VideoOptionsPanel_Refresh( Advanced_);
 end
 
-function Advanced_Refresh(self)
-	for i, control in ipairs(self.controls) do
-		control.selectedID = nil;
-	end
-	VideoOptionsPanel_Refresh(self);
-end
-
 function VideoOptionsPanel_Refresh (self)
 	inrefresh = true;
 	BlizzardOptionsPanel_Refresh(self);
@@ -264,15 +257,9 @@ function ControlGetActiveCvarValue(self, checkCvar)
 end
 
 local function FinishChanges(self)
-	if ( VideoOptionsFrame.gxRestart or VideoOptionsFrame.windowUpdate ) then
-		if ( VideoOptionsFrame.gxRestart ) then
-			RestartGx();
-		else
-			UpdateWindow();
-		end
+	if ( VideoOptionsFrame.gxRestart ) then
 		VideoOptionsFrame.gxRestart = nil;
-		VideoOptionsFrame.windowUpdate = nil;
-
+		RestartGx();
 		-- reload some tables and redisplay
 		Display_DisplayModeDropDown.selectedID = nil; 							 	-- invalidates cached value
 		BlizzardOptionsPanel_RefreshControlSingle(Display_DisplayModeDropDown);		-- hardware may not have set this, so we need to refresh
@@ -299,9 +286,6 @@ local function CommitChange(self)
 			end
 			if ( self.restart ) then
 				VideoOptionsFrame.gxRestart = true;
-			end
-			if ( self.windowUpdate ) then
-				VideoOptionsFrame.windowUpdate = true;
 			end
 		end
 	end
@@ -334,14 +318,10 @@ function VideoOptionsPanel_Cancel (self)
 			if ( control.restart ) then
 				VideoOptionsFrame.gxRestart = true;
 			end
-			if ( control.windowUpdate ) then
-				VideoOptionsFrame.windowUpdate = true;
-			end
 		end
 		-- we need to force-set the value here just in case the control was doing dynamic updating
 		ControlSetValue(control, control.value);
 	end
-	VideoOptionsFrame.windowUpdate = nil;
 	VideoOptionsFrame.gxRestart = nil;
 	VideoOptionsFrame.gameRestart = nil;
 end
@@ -353,7 +333,7 @@ function VideoOptionsPanel_Default (self)
 	end
 end
 
-function Graphics_Default (self)
+function Graphics_Default (self, perControlCallback)
 	SetDefaultVideoOptions(0);
 	VideoOptionsPanel_Default( Display_);
 	VideoOptionsPanel_Default( Graphics_);
@@ -361,7 +341,26 @@ function Graphics_Default (self)
 	FinishChanges(self);
 end
 
-function Advanced_Default (self)
+function Graphics_Classic (self)
+	for key, value in pairs(VideoData) do
+		local control = _G[key];
+		if(control.classic and control:GetValue() ~= control.classic) then
+			VideoOptions_OnClick(control, control.classic);
+			if(control.type == CONTROLTYPE_DROPDOWN) then
+				local text = control.data[control.classic].text;
+				VideoOptionsDropDownMenu_SetText(control, text);
+			elseif(control.type == CONTROLTYPE_SLIDER) then
+				control:SetDisplayValue(control.classic);
+			end
+		elseif(key == "Graphics_Quality" or key == "RaidGraphics_Quality") then
+			control.noclick = true;
+			Graphics_Quality:SetValue(""..ClassicGraphicsQuality);	-- set the slider only
+			control.noclick = false;
+		end
+	end
+end
+
+function Advanced_Default (self, perControlCallback)
 	SetDefaultVideoOptions(1);
 	if(not InGlue()) then
 		SetDefaultVideoOptions(2);
@@ -563,16 +562,15 @@ function VideoOptions_OnClick(self, value)
 	self.newValue = value;
 	if(self.dependent ~= nil) then
 		for i, key in ipairs(self.dependent) do
-			local keyObject = _G[key];
-			keyObject.isdependtarget = true;
-			if(keyObject.onrefresh) then
-				keyObject:onrefresh();
+			_G[key].isdependtarget = true;
+			if(_G[key].onrefresh) then
+				_G[key]:onrefresh();
 			end
-			local func = keyObject.dependtarget;
+			local func = _G[key].dependtarget;
 			if(func ~= nil) then
-				func(keyObject);
+				func(_G[key]);
 			end
-			keyObject.isdependtarget = false;
+			_G[key].isdependtarget = false;
 		end
 	end
 	if ( self.capTargets ) then
@@ -902,34 +900,6 @@ function VideoOptionsSlider_OnLoad(self)
 	BlizzardOptionsPanel_RegisterControl(self, self:GetParent());
 end
 
-function VideoOptionsControl_OnEnter(self)
-	if(self.tooltip ~= nil) then
-		VideoOptionsTooltip:SetOwner(self);
-		if(self.name == nil) then
-			self.name = " ";
-		end
-		VideoOptionsTooltip:SetText(self.name .. ":", nil, nil, nil, nil, 1);
-		VideoOptionsTooltip:AddLine(self.tooltip, 1.0, 1.0, 1.0, 1.0, 1);
-		VideoOptionsTooltip:Show();
-	end
-end
-
-function VideoOptionsControl_OnLeave(self)
-	VideoOptionsTooltip:Hide();
-end
-
-function VideoOptionsWarning_OnEnter(self)
-	if ( self.tooltip ) then
-		VideoOptionsTooltip:SetOwner(self, "ANCHOR_LEFT");
-		VideoOptionsTooltip:SetText(self.tooltip, 1.0, 1.0, 1.0, 1, 1);
-	end
-end
-
-function VideoOptionsWarning_OnLeave(self)
-	VideoOptionsTooltip:Hide();
-end
-
-
 -------------------------------------------------------------------------------------------------------
 
 function VideoOptionsPanel_OnLoad (self, okay, cancel, default, refresh)
@@ -957,6 +927,7 @@ end
 function Graphics_OnLoad (self)
 	self.name = GRAPHICS_LABEL;
 	self.hasApply = true;
+	self.classic = Graphics_Classic;
 	VideoOptionsPanel_OnLoad( Display_);
 	VideoOptionsPanel_OnLoad( Graphics_);
 	VideoOptionsPanel_OnLoad( RaidGraphics_);
@@ -975,8 +946,17 @@ function Advanced_OnLoad (self)
 	self.hasApply = true;
 
 	VideoOptionsPanel_OnLoad(self);
-	BlizzardOptionsPanel_OnLoad(self, VideoOptionsPanel_Okay, VideoOptionsPanel_Cancel, Advanced_Default, Advanced_Refresh);
+	BlizzardOptionsPanel_OnLoad(self, VideoOptionsPanel_Okay, VideoOptionsPanel_Cancel, Advanced_Default, VideoOptionsPanel_Refresh);
 	OptionsFrame_AddCategory(VideoOptionsFrame, self);
+
+	if(true) then
+		local name = self:GetName();
+		_G[name .. "StereoEnabled"]:Hide();
+		_G[name .. "Convergence"]:Hide();
+		_G[name .. "EyeSeparation"]:Hide();
+		_G[name .. "StereoHeader"]:Hide();
+		_G[name .. "StereoHeaderUnderline"]:Hide();
+	end
 end
 
 --
@@ -1052,14 +1032,7 @@ function InterfaceOptionsLanguagesPanel_UpdateRestartTexture()
 	end
 end
 
-function InterfaceOptionsLanguagePanelLocalDropDown_OnEnter(self)
-	VideoOptionsTooltip:SetOwner(self, "ANCHOR_TOPRIGHT");
-	VideoOptionsTooltip:SetText(self.tooltip, nil, nil, nil, nil, 1);
-end
 
-function InterfaceOptionsLanguagePanelLocalDropDown_OnLeave(self)
-	VideoOptionsTooltip:Hide();
-end
 
 function InterfaceOptionsLanguagesPanelLocaleDropDown_OnLoad (self)
 	self.type = CONTROLTYPE_DROPDOWN;
@@ -1197,7 +1170,7 @@ LanguageRegions["esMX"] = 10;
 LanguageRegions["ruRU"] = 11;
 LanguageRegions["ptBR"] = 12;
 LanguageRegions["ptPT"] = 13;
-LanguageRegions["itIT"] = 14;
+LanguageRegions["itIT"] = 14; -- For 1.12: These indices map to UV coordiantes in textures that we don't need to update, so don't remove itIT
 
 LANGUAGE_TEXT_HEIGHT = 22/512;
 
@@ -1301,10 +1274,7 @@ function Graphics_SliderOnValueChanged(self, value, userInput)
 		self.newValue = value;
 		VideoOptions_OnClick(self, value);
 	end
-
-	if not self.preventValueChangeHandlerFromSettingLabel then
-		self.Label:SetText(value);
-	end
+	self.Label:SetText(value);
 end
 
 function Graphics_SliderOnShow(self)

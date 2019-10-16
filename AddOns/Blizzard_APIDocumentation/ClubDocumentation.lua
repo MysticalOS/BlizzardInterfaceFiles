@@ -269,15 +269,6 @@ local Club =
 			},
 		},
 		{
-			Name = "GetClubCapacity",
-			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "capacity", Type = "number", Nilable = false },
-			},
-		},
-		{
 			Name = "GetClubInfo",
 			Type = "Function",
 
@@ -289,20 +280,6 @@ local Club =
 			Returns =
 			{
 				{ Name = "info", Type = "ClubInfo", Nilable = true },
-			},
-		},
-		{
-			Name = "GetClubLimits",
-			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "clubType", Type = "ClubType", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "clubLimits", Type = "ClubLimits", Nilable = false },
 			},
 		},
 		{
@@ -361,15 +338,6 @@ local Club =
 			Returns =
 			{
 				{ Name = "errorCode", Type = "string", Nilable = true },
-			},
-		},
-		{
-			Name = "GetGuildClubId",
-			Type = "Function",
-
-			Returns =
-			{
-				{ Name = "guildClubId", Type = "string", Nilable = true },
 			},
 		},
 		{
@@ -441,22 +409,6 @@ local Club =
 			Returns =
 			{
 				{ Name = "invitations", Type = "table", InnerType = "ClubSelfInvitationInfo", Nilable = false },
-			},
-		},
-		{
-			Name = "GetLastTicketResponse",
-			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "ticket", Type = "string", Nilable = false },
-			},
-
-			Returns =
-			{
-				{ Name = "error", Type = "ClubErrorType", Nilable = false },
-				{ Name = "info", Type = "ClubInfo", Nilable = true },
-				{ Name = "showError", Type = "bool", Nilable = false },
 			},
 		},
 		{
@@ -788,16 +740,6 @@ local Club =
 			},
 		},
 		{
-			Name = "SendCharacterInvitation",
-			Type = "Function",
-
-			Arguments =
-			{
-				{ Name = "clubId", Type = "string", Nilable = false },
-				{ Name = "character", Type = "string", Nilable = false },
-			},
-		},
-		{
 			Name = "SendInvitation",
 			Type = "Function",
 			Documentation = { "Check the canSendInvitation privilege." },
@@ -871,6 +813,15 @@ local Club =
 			{
 				{ Name = "clubId", Type = "string", Nilable = false },
 				{ Name = "settings", Type = "table", InnerType = "ClubStreamNotificationSetting", Nilable = false },
+			},
+		},
+		{
+			Name = "SetCommunityID",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "communityID", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -1183,7 +1134,9 @@ local Club =
 			LiteralName = "CLUB_TICKET_RECEIVED",
 			Payload =
 			{
+				{ Name = "error", Type = "ClubErrorType", Nilable = false },
 				{ Name = "ticket", Type = "string", Nilable = false },
+				{ Name = "info", Type = "ClubInfo", Nilable = true },
 			},
 		},
 		{
@@ -1228,7 +1181,7 @@ local Club =
 			Name = "ClubRoleIdentifier",
 			Type = "Enumeration",
 			NumValues = 4,
-			MinValue = 1,
+			MinValue = 0,
 			MaxValue = 4,
 			Fields =
 			{
@@ -1241,15 +1194,13 @@ local Club =
 		{
 			Name = "ClubType",
 			Type = "Enumeration",
-			NumValues = 4,
+			NumValues = 2,
 			MinValue = 0,
-			MaxValue = 3,
+			MaxValue = 1,
 			Fields =
 			{
 				{ Name = "BattleNet", Type = "ClubType", EnumValue = 0 },
-				{ Name = "Character", Type = "ClubType", EnumValue = 1 },
-				{ Name = "Guild", Type = "ClubType", EnumValue = 2 },
-				{ Name = "Other", Type = "ClubType", EnumValue = 3 },
+				{ Name = "Other", Type = "ClubType", EnumValue = 1 },
 			},
 		},
 		{
@@ -1414,15 +1365,13 @@ local Club =
 		{
 			Name = "ClubStreamType",
 			Type = "Enumeration",
-			NumValues = 4,
+			NumValues = 2,
 			MinValue = 0,
-			MaxValue = 3,
+			MaxValue = 1,
 			Fields =
 			{
 				{ Name = "General", Type = "ClubStreamType", EnumValue = 0 },
-				{ Name = "Guild", Type = "ClubStreamType", EnumValue = 1 },
-				{ Name = "Officer", Type = "ClubStreamType", EnumValue = 2 },
-				{ Name = "Other", Type = "ClubStreamType", EnumValue = 3 },
+				{ Name = "Other", Type = "ClubStreamType", EnumValue = 1 },
 			},
 		},
 		{
@@ -1441,9 +1390,9 @@ local Club =
 		{
 			Name = "ValidateNameResult",
 			Type = "Enumeration",
-			NumValues = 18,
+			NumValues = 17,
 			MinValue = 0,
-			MaxValue = 17,
+			MaxValue = 16,
 			Fields =
 			{
 				{ Name = "NameSuccess", Type = "ValidateNameResult", EnumValue = 0 },
@@ -1463,7 +1412,6 @@ local Club =
 				{ Name = "NameRussianConsecutiveSilentCharacters", Type = "ValidateNameResult", EnumValue = 14 },
 				{ Name = "NameRussianSilentCharacterAtBeginningOrEnd", Type = "ValidateNameResult", EnumValue = 15 },
 				{ Name = "NameDeclensionDoesntMatchBaseName", Type = "ValidateNameResult", EnumValue = 16 },
-				{ Name = "NameSpacesDisallowed", Type = "ValidateNameResult", EnumValue = 17 },
 			},
 		},
 		{
@@ -1549,14 +1497,6 @@ local Club =
 				{ Name = "invitationId", Type = "string", Nilable = false },
 				{ Name = "isMyInvitation", Type = "bool", Nilable = false },
 				{ Name = "invitee", Type = "ClubMemberInfo", Nilable = false },
-			},
-		},
-		{
-			Name = "ClubLimits",
-			Type = "Structure",
-			Fields =
-			{
-				{ Name = "maximumNumberOfStreams", Type = "number", Nilable = false },
 			},
 		},
 		{

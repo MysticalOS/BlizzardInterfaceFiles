@@ -5,11 +5,6 @@ TOURNAMENT_OBSERVE_PLAYER_PRIMARY = 1;
 TOURNAMENT_OBSERVE_PLAYER_SECONDARY = 2;
 TOURNAMENT_OBSERVE_PLAYER_PRIMARY_SNAP = 3;
 
--- Limits can be overwritten in another addon.
-COMMENTATOR_MAX_OFFENSIVE_SPELLS = COMMENTATOR_MAX_OFFENSIVE_SPELLS or 5;
-COMMENTATOR_MAX_DEFENSIVE_SPELLS = COMMENTATOR_MAX_DEFENSIVE_SPELLS or 5;
-COMMENTATOR_MAX_DEBUFF_SPELLS = COMMENTATOR_MAX_DEBUFF_SPELLS or 2;
-
 local TOURNAMENTARENA_ZONESTATE_SCANNING = "scanning";					-- [ Waiting to join a match ] --
 local TOURNAMENTARENA_ZONESTATE_TRANSFERRING_IN = "transferring_in";		-- [ Joining a match ] --
 local TOURNAMENTARENA_ZONESTATE_TRANSFERRING_OUT = "transferring_out";	-- [ Leaving a match ] --
@@ -48,13 +43,14 @@ function PvPCommentatorMixin:OnLoad()
 
 	self.unitFrames = {};
 	self.sortedUnitFrames = {};
+	local TEAM_POSITIONS = { "left", "right", };
 
 	for teamIndex = 1, C_Commentator.GetMaxNumTeams() do
-		local alignment = teamIndex == 1 and "LEFT" or "RIGHT";
 		self.unitFrames[teamIndex] = {};
+		
 		for playerIndex = 1, C_Commentator.GetMaxNumPlayersPerTeam() do
 			local newFrame = CreateFrame("FRAME", nil, WorldFrame, "CommentatorUnitFrameTemplate");
-			newFrame:Initialize(alignment);
+			newFrame:Initialize(TEAM_POSITIONS[teamIndex]);
 			self.unitFrames[teamIndex][playerIndex] = newFrame;
 		end
 	end
@@ -194,7 +190,7 @@ function PvPCommentatorMixin:SetDefaultBindings()
 	SetBinding("T", "TOGGLESMOOTHFOLLOWTRANSITIONS");
 	SetBinding("C", "TOGGLECAMERACOLLISION");
 	SetBinding("V", "CYCLEFOLLOWTRANSITONSPEED");
-	SaveBindings(GetCurrentBindingSet());
+	AttemptToSaveBindings(GetCurrentBindingSet());
 end
 
 function PvPCommentatorMixin:SetNeedsFullRefresh(needed)
@@ -215,7 +211,6 @@ function PvPCommentatorMixin:OnUpdate(elapsed)
 	self:CheckObserverState();
 	self:LayoutTeamFrames();
 
-	CommentatorTeamDisplay:SetMatchDuration(C_Commentator.GetMatchDuration());
 
 	self.targetSpeedFactor = IsShiftKeyDown() and 2.0 or 1.0;
 	self.currentSpeedFactor = DeltaLerp(self.currentSpeedFactor or 1.0, self.targetSpeedFactor, .05, elapsed);
@@ -276,9 +271,9 @@ function PvPCommentatorMixin:SetDefaultCVars()
 	SetCVar("nameplateShowAll", 1);
 
 	-- See InterfaceOptionsNPCNamesDropDown, we want these all off.
-	SetCVar("UnitNameFriendlySpecialNPCName", 0);
-	SetCVar("UnitNameHostleNPC", 0);
-	SetCVar("UnitNameInteractiveNPC", 0);
+	-- SetCVar("UnitNameFriendlySpecialNPCName", 0);	-- CVar removed in Classic 7.3.5
+	-- SetCVar("UnitNameHostleNPC", 0);					-- CVar removed in Classic 7.3.5
+	-- SetCVar("UnitNameInteractiveNPC", 0);			-- CVar removed in Classic 7.3.5
 	SetCVar("UnitNameNPC", 0);
 	SetCVar("ShowQuestUnitCircles", 0);
 	
@@ -320,7 +315,6 @@ function PvPCommentatorMixin:OnEvent(event, ...)
 			C_Commentator.SetCameraPosition(pos.x, pos.y, pos.z, SNAP_TO_POSITION);
 			C_Commentator.SnapCameraLookAtPoint();
 		end
-		CommentatorTeamDisplay:ResetDampeningTracker();
 	elseif event == "COMMENTATOR_PLAYER_UPDATE" then
 		self:FullPlayerRefresh();
 	elseif event == "COMMENTATOR_PLAYER_NAME_OVERRIDE_UPDATE" then
@@ -395,7 +389,7 @@ function PvPCommentatorMixin:LayoutTeamFrames()
 			if unitFrame:IsValid() then
 				local newYOffset = offsetY + unitFrame:GetAdditionalYSpacing();
 			
-				if unitFrame.align == "RIGHT" then
+				if unitFrame.align == "right" then
 					unitFrame:SetPoint("TOPRIGHT", WorldFrame, -X_OFFSET, newYOffset);
 				else
 					unitFrame:SetPoint("TOPLEFT", WorldFrame, X_OFFSET, newYOffset);

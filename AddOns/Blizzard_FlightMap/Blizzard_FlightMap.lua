@@ -8,7 +8,7 @@ function FlightMapMixin:SetupTitle()
 	self.BorderFrame.Bg:SetParent(self);
 	self.BorderFrame.TopTileStreaks:Hide();
 
-	self.BorderFrame:SetPortraitToAsset([[Interface/Icons/icon_petfamily_flying]]);
+	SetPortraitToTexture(self.BorderFrame.portrait, [[Interface/Icons/icon_petfamily_flying]]);
 end
 
 function FlightMapMixin:OnLoad()
@@ -45,7 +45,6 @@ function FlightMapMixin:AddStandardDataProviders()
 	self:AddDataProvider(CreateFromMixins(ClickToZoomDataProviderMixin));	-- no pins
 	self:AddDataProvider(CreateFromMixins(ZoneLabelDataProviderMixin));	-- no pins
 	self:AddDataProvider(CreateFromMixins(FlightMap_AreaPOIProviderMixin));
-	self:AddDataProvider(CreateFromMixins(QuestSessionDataProviderMixin));
 
 	local groupMembersDataProvider = CreateFromMixins(GroupMembersDataProviderMixin);
 	groupMembersDataProvider:SetUnitPinSize("player", 0);
@@ -73,9 +72,9 @@ function FlightMapMixin:OnShow()
 	self:SetMapID(mapID);
 
 	MapCanvasMixin.OnShow(self);
-
+	
 	self:ResetZoom();
-
+	
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPEN);
 end
 

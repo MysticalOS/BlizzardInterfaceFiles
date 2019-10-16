@@ -291,7 +291,7 @@ function ChannelButtonTextMixin:ChannelSupportsText()
 end
 
 function ChannelButtonTextMixin:ChannelSupportsVoice()
-	return C_ChatInfo.IsPartyChannelType(self:GetChannelType());
+	return self:GetVoiceChannel() ~= nil;
 end
 
 -- Voice channel button

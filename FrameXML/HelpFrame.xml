@@ -1786,7 +1786,7 @@
 	</Frame>
 
 	<Frame name="BrowserSettingsTooltip" inherits="TooltipBorderedFrameTemplate" parent="UIParent" frameStrata="FULLSCREEN_DIALOG" hidden="true" >
-		<Size x="250" y="70"/>
+		<Size x="250" y="100"/>
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString parentKey="Title" inherits="GameFontHighlight" text="BROWSER_SETTINGS_TOOLTIP">
@@ -1797,10 +1797,34 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button parentKey="CookiesButton" inherits="UIPanelButtonTemplate" text="BROWSER_DELETE_COOKIES">
+			<Button parentKey="CacheButton" inherits="UIPanelButtonTemplate" text="BROWSER_CLEAR_CACHE">
 				<Size x="150" y="22"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" y="-10"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+						local browser = BrowserSettingsTooltip.browser
+						if (browser) then
+							browser:ClearCache();
+						end
+					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
+						GameTooltip:SetText(BROWSER_CLEAR_CACHE_TOOLTIP, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+						self:GetParent().isCounting = nil;
+					</OnEnter>
+					<OnLeave>
+						self:GetParent().isCounting = true;
+						GameTooltip_Hide()
+					</OnLeave>
+				</Scripts>
+			</Button>
+			<Button parentKey="CookiesButton" inherits="UIPanelButtonTemplate" text="BROWSER_DELETE_COOKIES">
+				<Size x="150" y="22"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.CacheButton" relativePoint="BOTTOMLEFT" y="-10"/>
 				</Anchors>
 				<Scripts>
 					<OnClick>
@@ -2052,6 +2076,17 @@
 	</Frame>
 	<Frame name="ReportCheatingDialog" parent="UIParent" hidden="true" frameStrata="DIALOG">
 		<Size x="344" y="310"/>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+		</Backdrop>
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString name="$parentTitle" inherits="GameFontNormal" text="REPORT_CHEATING_TITLE">
@@ -2068,7 +2103,6 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame parentKey="Border" inherits="DialogBorderTemplate"/>
 			<Frame name="$parentCommentFrame" parentKey="CommentFrame">
 				<Size x="300" y="100"/>
 				<Anchors>
@@ -2196,7 +2230,7 @@
 				<Scripts>
 					<OnClick>
 						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-						C_ReportSystem.SendReportPlayer(self:GetParent().reportToken, self:GetParent().CommentFrame.EditBox:GetText());
+						C_ChatInfo.ReportPlayer(PLAYER_REPORT_TYPE_CHEATING, self:GetParent().target, self:GetParent().CommentFrame.EditBox:GetText());
 						StaticPopupSpecial_Hide(self:GetParent());
 					</OnClick>
 				</Scripts>

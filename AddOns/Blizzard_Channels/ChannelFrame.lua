@@ -54,6 +54,8 @@ do
 
 		local notificationSubSystem = ChatAlertFrame:AddAutoAnchoredSubSystem(VoiceChatChannelActivatedNotification);
 		ChatAlertFrame:SetSubSystemAnchorPriority(notificationSubSystem, 11);
+
+		self:CheckDiscoverChannels();
 	end
 end
 
@@ -220,7 +222,8 @@ function ChannelFrameMixin:HideTutorial()
 end
 
 function ChannelFrameMixin:ShouldShowTutorial()
-	return UnitLevel("player") >= 10 and not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_CHAT_CHANNELS);
+	return false; -- Disabling this modern-style tutorial for Classic.
+	--return UnitLevel("player") >= 10 and not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_CHAT_CHANNELS);
 end
 
 function ChannelFrameMixin:TryCreateVoiceChannel(channelName)
@@ -229,9 +232,9 @@ function ChannelFrameMixin:TryCreateVoiceChannel(channelName)
 	end);
 end
 
-function ChannelFrameMixin:TryJoinVoiceChannelByType(channelType, autoActivate)
+function ChannelFrameMixin:TryJoinVoiceChannelByType(channelType)
 	self:TryExecuteCommand(function()
-		C_VoiceChat.RequestJoinChannelByChannelType(channelType, autoActivate);
+		C_VoiceChat.RequestJoinChannelByChannelType(channelType);
 	end);
 end
 
@@ -403,19 +406,18 @@ function ChannelFrameMixin:OnVoiceChannelDisplayNameChanged(channelID, channelNa
 end
 
 function ChannelFrameMixin:OnVoiceChatError(platformCode, statusCode)
+	local errorCode = Voice_GetGameErrorFromStatusCode(statusCode);
 	local errorString = Voice_GetGameAlertStringFromStatusCode(statusCode);
 	if errorString then
+		UIErrorsFrame:TryDisplayMessage(errorCode, errorString, RED_FONT_COLOR:GetRGB());
 		ChatFrame_DisplayUsageError(errorString);
 		self.lastError = statusCode;
-	end
-
-	local errorCode = Voice_GetGameErrorFromStatusCode(statusCode);
-	if errorCode then
-		UIErrorsFrame:TryDisplayMessage(errorCode, errorString, RED_FONT_COLOR:GetRGB());
 	end
 end
 
 function ChannelFrameMixin:OnVoiceChatConnectionSuccess()
+	self:CheckDiscoverChannels();
+
 	if self.lastError then
 		ChatFrame_DisplayUsageError(VOICE_CHAT_SERVICE_CONNECTION_RESTORED);
 		self.lastError = nil;
@@ -533,6 +535,7 @@ function ChannelFrameMixin:OnCountUpdate(id, count)
 end
 
 function ChannelFrameMixin:OnGroupFormed(partyCategory, partyGUID)
+	self:TryJoinVoiceChannelByType(GetChannelTypeFromPartyCategory(partyCategory));
 end
 
 function ChannelFrameMixin:OnGroupLeft(partyCategory, partyGUID)

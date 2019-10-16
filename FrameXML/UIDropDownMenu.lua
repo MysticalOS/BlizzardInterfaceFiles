@@ -1,4 +1,5 @@
-UIDROPDOWNMENU_MAXBUTTONS = 1;
+UIDROPDOWNMENU_MINBUTTONS = 8;
+UIDROPDOWNMENU_MAXBUTTONS = 8;
 UIDROPDOWNMENU_MAXLEVELS = 2;
 UIDROPDOWNMENU_BUTTON_HEIGHT = 16;
 UIDROPDOWNMENU_BORDER_HEIGHT = 15;
@@ -14,6 +15,8 @@ UIDROPDOWNMENU_MENU_VALUE = nil;
 UIDROPDOWNMENU_SHOW_TIME = 2;
 -- Default dropdown text height
 UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT = nil;
+-- For Classic checkmarks, this is the additional padding that we give to the button text.
+UIDROPDOWNMENU_CLASSIC_CHECK_PADDING = 4;
 -- List of open menus
 OPEN_DROPDOWNMENUS = {};
 
@@ -31,7 +34,7 @@ end
 
 UIDropDownMenuDelegate:SetScript("OnAttributeChanged", UIDropDownMenuDelegate_OnAttributeChanged);
 
-function UIDropDownMenu_InitializeHelper(frame)
+function UIDropDownMenu_InitializeHelper (frame)
 	-- This deals with the potentially tainted stuff!
 	if ( frame ~= UIDROPDOWNMENU_OPEN_MENU ) then
 		UIDROPDOWNMENU_MENU_LEVEL = 1;
@@ -183,6 +186,8 @@ function UIDropDownMenuButtonInvisibleButton_OnEnter(self)
 				GameTooltip_AddColoredLine(GameTooltip, parent.tooltipWarning, RED_FONT_COLOR, true);
 			end
 			GameTooltip:Show();
+		else
+			GameTooltip_AddNewbieTip(parent, parent.tooltipTitle, 1.0, 1.0, 1.0, parent.tooltipText, 1);
 		end
 	end
 end
@@ -212,9 +217,11 @@ function UIDropDownMenuButton_OnEnter(self)
 				GameTooltip_AddNormalLine(GameTooltip, self.tooltipText, true);
 			end
 			GameTooltip:Show();
+		else
+			GameTooltip_AddNewbieTip(self, self.tooltipTitle, 1.0, 1.0, 1.0, self.tooltipText, 1);
 		end
 	end
-
+				
 	if ( self.mouseOverIcon ~= nil ) then
 		self.Icon:SetTexture(self.mouseOverIcon);
 		self.Icon:Show();
@@ -225,7 +232,7 @@ function UIDropDownMenuButton_OnLeave(self)
 	self.Highlight:Hide();
 	UIDropDownMenu_StartCounting(self:GetParent());
 	GameTooltip:Hide();
-
+				
 	if ( self.mouseOverIcon ~= nil ) then
 		if ( self.icon ~= nil ) then
 			self.Icon:SetTexture(self.icon);
@@ -278,11 +285,26 @@ info.icon = [TEXTURE] -- An icon for the button.
 info.mouseOverIcon = [TEXTURE] -- An override icon when a button is moused over.
 ]]
 
+local UIDropDownMenu_ButtonInfo = {};
+
+--Until we get around to making this betterz...
+local UIDropDownMenu_SecureInfo = {};
+
+local wipe = table.wipe;
+
 function UIDropDownMenu_CreateInfo()
-	return {};
+	-- Reuse the same table to prevent memory churn
+
+	if ( issecure() ) then
+		securecall(wipe, UIDropDownMenu_SecureInfo);
+		return UIDropDownMenu_SecureInfo;
+	else
+		return wipe(UIDropDownMenu_ButtonInfo);
+	end
 end
 
 function UIDropDownMenu_CreateFrames(level, index)
+
 	while ( level > UIDROPDOWNMENU_MAXLEVELS ) do
 		UIDROPDOWNMENU_MAXLEVELS = UIDROPDOWNMENU_MAXLEVELS + 1;
 		local newList = CreateFrame("Button", "DropDownList"..UIDROPDOWNMENU_MAXLEVELS, nil, "UIDropDownListTemplate");
@@ -292,7 +314,7 @@ function UIDropDownMenu_CreateFrames(level, index)
 		newList:SetID(UIDROPDOWNMENU_MAXLEVELS);
 		newList:SetWidth(180)
 		newList:SetHeight(10)
-		for i=1, UIDROPDOWNMENU_MAXBUTTONS do
+		for i=UIDROPDOWNMENU_MINBUTTONS+1, UIDROPDOWNMENU_MAXBUTTONS do
 			local newButton = CreateFrame("Button", "DropDownList"..UIDROPDOWNMENU_MAXLEVELS.."Button"..i, newList, "UIDropDownMenuButtonTemplate");
 			newButton:SetID(i);
 		end
@@ -307,32 +329,36 @@ function UIDropDownMenu_CreateFrames(level, index)
 	end
 end
 
+local separatorInfo;
+
 function UIDropDownMenu_AddSeparator(level)
-	local separatorInfo = {
-		hasArrow = false;
-		dist = 0;
-		isTitle = true;
-		isUninteractable = true;
-		notCheckable = true;
-		iconOnly = true;
-		icon = "Interface\\Common\\UI-TooltipDivider-Transparent";
-		tCoordLeft = 0;
-		tCoordRight = 1;
-		tCoordTop = 0;
-		tCoordBottom = 1;
-		tSizeX = 0;
-		tSizeY = 8;
-		tFitDropDownSizeX = true;
-		iconInfo = {
-			tCoordLeft = 0,
-			tCoordRight = 1,
-			tCoordTop = 0,
-			tCoordBottom = 1,
-			tSizeX = 0,
-			tSizeY = 8,
-			tFitDropDownSizeX = true
-		},
-	};
+	if not separatorInfo then
+		separatorInfo =	{
+			hasArrow = false;
+			dist = 0;
+			isTitle = true;
+			isUninteractable = true;
+			notCheckable = true;
+			iconOnly = true;
+			icon = "Interface\\Common\\UI-TooltipDivider-Transparent";
+			tCoordLeft = 0;
+			tCoordRight = 1;
+			tCoordTop = 0;
+			tCoordBottom = 1;
+			tSizeX = 0;
+			tSizeY = 8;
+			tFitDropDownSizeX = true;
+			iconInfo = {
+				tCoordLeft = 0,
+				tCoordRight = 1,
+				tCoordTop = 0,
+				tCoordBottom = 1,
+				tSizeX = 0,
+				tSizeY = 8,
+				tFitDropDownSizeX = true
+			},
+		};
+	end
 
 	UIDropDownMenu_AddButton(separatorInfo, level);
 end
@@ -482,6 +508,7 @@ function UIDropDownMenu_AddButton(info, level)
 	button.padding = info.padding;
 	button.icon = info.icon;
 	button.mouseOverIcon = info.mouseOverIcon;
+	button.classicChecks = info.classicChecks;
 
 	if ( info.value ) then
 		button.value = info.value;
@@ -564,11 +591,15 @@ function UIDropDownMenu_AddButton(info, level)
 			uncheck:SetDesaturated(false);
 			uncheck:SetAlpha(1);
 		end
+		
+		check:SetSize(16,16);
+		uncheck:SetSize(16,16);
+		normalText:SetPoint("LEFT", check, "RIGHT", 0, 0);
 
 		if info.customCheckIconAtlas or info.customCheckIconTexture then
 			check:SetTexCoord(0, 1, 0, 1);
 			uncheck:SetTexCoord(0, 1, 0, 1);
-
+			
 			if info.customCheckIconAtlas then
 				check:SetAtlas(info.customCheckIconAtlas);
 				uncheck:SetAtlas(info.customUncheckIconAtlas or info.customCheckIconAtlas);
@@ -576,6 +607,18 @@ function UIDropDownMenu_AddButton(info, level)
 				check:SetTexture(info.customCheckIconTexture);
 				uncheck:SetTexture(info.customUncheckIconTexture or info.customCheckIconTexture);
 			end
+		elseif info.classicChecks then
+			check:SetTexCoord(0, 1, 0, 1);
+			uncheck:SetTexCoord(0, 1, 0, 1);
+
+			check:SetSize(24,24);
+			uncheck:SetSize(24,24);
+
+			check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check");
+			uncheck:SetTexture("");
+
+			normalText:SetPoint("LEFT", check, "RIGHT", UIDROPDOWNMENU_CLASSIC_CHECK_PADDING, 0);
+
 		elseif info.isNotRadio then
 			check:SetTexCoord(0.0, 0.5, 0.0, 0.5);
 			check:SetTexture("Interface\\Common\\UI-DropDownRadioChecks");
@@ -692,6 +735,10 @@ function UIDropDownMenu_GetButtonWidth(button)
 			-- Add padding for the icon
 			width = width + 10;
 		end
+
+		if ( button.classicChecks ) then
+			width = width + UIDROPDOWNMENU_CLASSIC_CHECK_PADDING;
+		end
 	else
 		return minWidth;
 	end
@@ -711,6 +758,7 @@ function UIDropDownMenu_GetButtonWidth(button)
 end
 
 function UIDropDownMenu_Refresh(frame, useValue, dropdownLevel)
+	local button, checked, checkImage, uncheckImage, normalText, width;
 	local maxWidth = 0;
 	local somethingChecked = nil;
 	if ( not dropdownLevel ) then
@@ -721,8 +769,8 @@ function UIDropDownMenu_Refresh(frame, useValue, dropdownLevel)
 	listFrame.numButtons = listFrame.numButtons or 0;
 	-- Just redraws the existing menu
 	for i=1, UIDROPDOWNMENU_MAXBUTTONS do
-		local button = _G["DropDownList"..dropdownLevel.."Button"..i];
-		local checked = nil;
+		button = _G["DropDownList"..dropdownLevel.."Button"..i];
+		checked = nil;
 
 		if(i <= listFrame.numButtons) then
 			-- See if checked or not
@@ -746,8 +794,8 @@ function UIDropDownMenu_Refresh(frame, useValue, dropdownLevel)
 
 		if not button.notCheckable and button:IsShown() then
 			-- If checked show check image
-			local checkImage = _G["DropDownList"..dropdownLevel.."Button"..i.."Check"];
-			local uncheckImage = _G["DropDownList"..dropdownLevel.."Button"..i.."UnCheck"];
+			checkImage = _G["DropDownList"..dropdownLevel.."Button"..i.."Check"];
+			uncheckImage = _G["DropDownList"..dropdownLevel.."Button"..i.."UnCheck"];
 			if ( checked ) then
 				somethingChecked = true;
 				local icon = GetChild(frame, frame:GetName(), "Icon");
@@ -771,7 +819,7 @@ function UIDropDownMenu_Refresh(frame, useValue, dropdownLevel)
 		end
 
 		if ( button:IsShown() ) then
-			local width = UIDropDownMenu_GetButtonWidth(button);
+			width = UIDropDownMenu_GetButtonWidth(button);
 			if ( width > maxWidth ) then
 				maxWidth = width;
 			end
@@ -782,7 +830,7 @@ function UIDropDownMenu_Refresh(frame, useValue, dropdownLevel)
 	end
 	if (not frame.noResize) then
 		for i=1, UIDROPDOWNMENU_MAXBUTTONS do
-			local button = _G["DropDownList"..dropdownLevel.."Button"..i];
+			button = _G["DropDownList"..dropdownLevel.."Button"..i];
 			button:SetWidth(maxWidth);
 		end
 		UIDropDownMenu_RefreshDropDownSize(_G["DropDownList"..dropdownLevel]);
@@ -851,9 +899,9 @@ function UIDropDownMenu_GetSelectedID(frame)
 		return frame.selectedID;
 	else
 		-- If no explicit selectedID then try to send the id of a selected value or name
-		local listFrame = _G["DropDownList"..UIDROPDOWNMENU_MENU_LEVEL];
-		for i=1, listFrame.numButtons do
-			local button = _G["DropDownList"..UIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
+		local button;
+		for i=1, UIDROPDOWNMENU_MAXBUTTONS do
+			button = _G["DropDownList"..UIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
 			-- See if checked or not
 			if ( UIDropDownMenu_GetSelectedName(frame) ) then
 				if ( button:GetText() == UIDropDownMenu_GetSelectedName(frame) ) then
@@ -931,8 +979,8 @@ function ToggleDropDownMenu(level, value, dropDownFrame, anchorName, xOffset, yO
 	UIDropDownMenuDelegate:SetAttribute("createframes", true);
 	UIDROPDOWNMENU_MENU_LEVEL = level;
 	UIDROPDOWNMENU_MENU_VALUE = value;
+	local listFrame = _G["DropDownList"..level];
 	local listFrameName = "DropDownList"..level;
-	local listFrame = _G[listFrameName];
 	local tempFrame;
 	local point, relativePoint, relativeTo;
 	if ( not dropDownFrame ) then
@@ -1063,8 +1111,6 @@ function ToggleDropDownMenu(level, value, dropDownFrame, anchorName, xOffset, yO
 			return;
 		end
 
-		listFrame.onShow = dropDownFrame.listFrameOnShow;
-
 		-- Check to see if the dropdownlist is off the screen, if it is anchor it to the top of the dropdown button
 		listFrame:Show();
 		-- Hack since GetCenter() is returning coords relative to 1024x768
@@ -1154,13 +1200,6 @@ function CloseDropDownMenus(level)
 	end
 	for i=level, UIDROPDOWNMENU_MAXLEVELS do
 		_G["DropDownList"..i]:Hide();
-	end
-end
-
-function UIDropDownMenu_OnShow(self)
-	if ( self.onShow ) then
-		self.onShow();
-		self.onShow = nil;
 	end
 end
 

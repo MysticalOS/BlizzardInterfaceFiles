@@ -250,7 +250,7 @@ local function OptionsFrame_RunCancelForCategory (category)
 end
 
 local function OptionsFrame_RunDefaultForCategory (category)
-	pcall(category.default, category);
+	pcall(category.default, category, nil);
 end
 
 local function OptionsFrame_RunRefreshForCategory (category)
@@ -281,7 +281,7 @@ end
 function OptionsFrame_SetAllToDefaults (self)
 	--Iterate through registered panels and run their default methods in a taint-safe fashion
 	for _, category in SecureNext, self.categoryList do
-		securecall("pcall", category.default, category);
+		securecall("pcall", category.default, category, nil);
 	end
 
 	--Refresh the categories to pick up changes made.
@@ -294,9 +294,18 @@ function OptionsFrame_SetCurrentToDefaults (self)
 		return;
 	end
 
-	displayedPanel.default(displayedPanel);
+	displayedPanel.default(displayedPanel, nil);
 	--Run the refresh method to refresh any values that were changed.
 	displayedPanel.refresh(displayedPanel);
+end
+
+function OptionsFrame_SetCurrentToClassic (self)
+	local displayedPanel = self.panelContainer.displayedPanel;
+	if ( not displayedPanel or not displayedPanel.classic ) then
+		return;
+	end
+
+	displayedPanel.classic(displayedPanel);
 end
 
 function OptionsFrame_RefreshCategories (self)

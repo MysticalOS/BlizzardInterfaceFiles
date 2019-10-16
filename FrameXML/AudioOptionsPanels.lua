@@ -54,11 +54,10 @@ SoundPanelOptions = {
 	Sound_EnableEmoteSounds = { text = "ENABLE_EMOTE_SOUNDS" },
 	Sound_EnablePetSounds = { text = "ENABLE_PET_SOUNDS" },
 	Sound_ZoneMusicNoDelay = { text = "ENABLE_MUSIC_LOOPING" },
-	Sound_EnablePetBattleMusic = { text = "ENABLE_PET_BATTLE_MUSIC" },
 	Sound_EnableSoundWhenGameIsInBG = { text = "ENABLE_BGSOUND" },
-	Sound_EnableReverb = { text = "ENABLE_REVERB" },
+	--Sound_EnableReverb = { text = "ENABLE_REVERB" },
 	--Sound_EnableHardware = { text = "ENABLE_HARDWARE" },
-	Sound_EnablePositionalLowPassFilter = { text = "ENABLE_SOFTWARE_HRTF" },
+	--Sound_EnablePositionalLowPassFilter = { text = "ENABLE_SOFTWARE_HRTF" },
 	Sound_SFXVolume = { text = "SOUND_VOLUME", minValue = 0, maxValue = 1, valueStep = 0.1, },
 	Sound_MusicVolume = { text = "MUSIC_VOLUME", minValue = 0, maxValue = 1, valueStep = 0.1, },
 	Sound_AmbienceVolume = { text = "AMBIENCE_VOLUME", minValue = 0, maxValue = 1, valueStep = 0.1, },
@@ -445,8 +444,7 @@ end
 
 local function AudioOptionsPanelVoiceChatSlider_BaseOnLoad(self, cvar, getCurrentFn)
 	BlizzardOptionsPanel_RegisterControl(self, self:GetParent());
-	local max = self.isValueNormalized and 1.0 or 100;
-	self:SetMinMaxValues(0, max);
+	self:SetMinMaxValues(0, 100);
 	self.Low:Hide();
 	self.High:Hide();
 	self.Text:ClearAllPoints();
@@ -456,16 +454,13 @@ local function AudioOptionsPanelVoiceChatSlider_BaseOnLoad(self, cvar, getCurren
 	self.defaultValue = defaultValue;
 
 	self.GetCurrentValue = function(self)
-		local value = getCurrentFn();
-		if value ~= nil then
-			return self.isValueInverted and (max - value) or value;
-		end
+		return getCurrentFn();
 	end
 
 	self.RefreshValue = function(self)
-		local value = self:GetCurrentValue();
-		if value ~= nil then
-			self:SetValue(value);
+		local current = getCurrentFn();
+		if current ~= nil then
+			self:SetValue(current);
 		end
 	end
 
@@ -473,26 +468,9 @@ local function AudioOptionsPanelVoiceChatSlider_BaseOnLoad(self, cvar, getCurren
 end
 
 local function AudioOptionsPanelVoiceChatSlider_BaseOnValueChanged(self, value, setValueFn)
-	local max;
-	-- Normalized values are in the range of [0,1].
-	if self.isValueNormalized then
-		self.newValue = value;
-		max = 1.0;
-	else
-		self.newValue = floor(value);
-		max = 100;
-	end
-	self.Text:SetText(FormatPercentage(self.newValue / max, true));
-	
-	-- If the underlying cvar's value has an inverse range, i.e. the slider
-	-- range is [0,1], but the cvar represents this range as [0,1], the value
-	-- can be inverted before returning. This changes a slider value of .9 to
-	-- a cvar value of .1.
-	if self.isValueInverted then
-		setValueFn(max - self.newValue);
-	else
-		setValueFn(self.newValue);
-	end
+	self.newValue = floor(value);
+	self.Text:SetText(FormatPercentage(self.newValue / 100, true));
+	setValueFn(self.newValue);
 end
 
 function AudioOptionsPanelVoiceChatVolumeSlider_OnLoad(self)
@@ -501,14 +479,6 @@ end
 
 function AudioOptionsPanelVoiceChatVolumeSlider_OnValueChanged(self, value)
 	AudioOptionsPanelVoiceChatSlider_BaseOnValueChanged(self, value, C_VoiceChat.SetOutputVolume);
-end
-
-function AudioOptionsPanelVoiceChatDuckingSlider_OnLoad(self)
-	AudioOptionsPanelVoiceChatSlider_BaseOnLoad(self, "VoiceChatMasterVolumeScale", C_VoiceChat.GetMasterVolumeScale);
-end
-
-function AudioOptionsPanelVoiceChatDuckingSlider_OnValueChanged(self, value)
-	AudioOptionsPanelVoiceChatSlider_BaseOnValueChanged(self, value, C_VoiceChat.SetMasterVolumeScale);
 end
 
 function AudioOptionsPanelVoiceChatMicVolumeSlider_OnLoad(self)

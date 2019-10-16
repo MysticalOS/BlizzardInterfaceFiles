@@ -41,7 +41,7 @@
 			<Font font="Fonts\ARKai_C.ttf" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="12" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\FRIZQT___CYR.TTF" height="10" outline="NORMAL"/>
@@ -59,7 +59,7 @@
 			<Font font="Fonts\ARKai_C.ttf" height="15" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="15" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="15" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\FRIZQT___CYR.TTF" height="13" outline="NORMAL"/>
@@ -260,7 +260,7 @@
 			<Font font="Fonts\FRIZQT__.TTF" height="11" outline="NORMAL" monochrome="true"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="11" outline="THICK" monochrome="true"/>
+			<Font font="Fonts\bHEI01B.TTF" height="11" outline="THICK" monochrome="true"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="12" outline="THICK" monochrome="true"/>
@@ -278,7 +278,7 @@
 			<Font font="Fonts\FRIZQT__.TTF" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="11" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="12" outline="NORMAL"/>
@@ -296,7 +296,7 @@
 			<Font font="Fonts\FRIZQT__.TTF" height="11"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="11"/>
+			<Font font="Fonts\bHEI01B.TTF" height="11"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="12"/>
@@ -314,7 +314,7 @@
 			<Font font="Fonts\ARKai_C.ttf" height="12"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="12"/>
+			<Font font="Fonts\bHEI01B.TTF" height="12"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="14"/>
@@ -332,7 +332,7 @@
 			<Font font="Fonts\ARKai_C.ttf" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="12" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="14" outline="NORMAL"/>
@@ -350,7 +350,7 @@
 			<Font font="Fonts\ARKai_C.ttf" height="14" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="14" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="14" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\ARIALN.TTF" height="16" outline="NORMAL"/>
@@ -1423,59 +1423,6 @@
 		</Member>
 	</FontFamily>
 
-	<FontFamily name="FriendsFont_11" virtual="true">
-		<Member alphabet="roman">
-			<Font font="Fonts\FRIZQT__.TTF" height="11">
-				<Shadow>
-					<Offset>
-						<AbsDimension x="1" y="-1"/>
-					</Offset>
-					<Color r="0" g="0" b="0"/>
-				</Shadow>
-			</Font>
-		</Member>
-		<Member alphabet="korean">
-			<Font font="Fonts\2002.TTF" height="11">
-				<Shadow>
-					<Offset>
-						<AbsDimension x="1" y="-1"/>
-					</Offset>
-					<Color r="0" g="0" b="0"/>
-				</Shadow>
-			</Font>
-		</Member>
-		<Member alphabet="simplifiedchinese">
-			<Font font="Fonts\ARKai_T.ttf" height="14">
-				<Shadow>
-					<Offset>
-						<AbsDimension x="1" y="-1"/>
-					</Offset>
-					<Color r="0" g="0" b="0"/>
-				</Shadow>
-			</Font>
-		</Member>
-		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\blei00d.TTF" height="14">
-				<Shadow>
-					<Offset>
-						<AbsDimension x="1" y="-1"/>
-					</Offset>
-					<Color r="0" g="0" b="0"/>
-				</Shadow>
-			</Font>
-		</Member>
-		<Member alphabet="russian">
-			<Font font="Fonts\FRIZQT___CYR.TTF" height="11">
-				<Shadow>
-					<Offset>
-						<AbsDimension x="1" y="-1"/>
-					</Offset>
-					<Color r="0" g="0" b="0"/>
-				</Shadow>
-			</Font>
-		</Member>
-	</FontFamily>
-	
 	<FontFamily name="FriendsFont_Small" virtual="true">
 		<Member alphabet="roman">
 			<Font font="Fonts\FRIZQT__.TTF" height="10">
@@ -1614,7 +1561,7 @@
 			</Font>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\arheiuhk_bd.TTF" height="11">
+			<Font font="Fonts\bHEI01B.TTF" height="11">
 				<Shadow>
 					<Offset>
 						<AbsDimension x="1" y="-1"/>
@@ -2119,6 +2066,59 @@
 				<Shadow>
 					<Offset>
 						<AbsDimension x="1" y="-1"/>
+					</Offset>
+					<Color r="0" g="0" b="0"/>
+				</Shadow>
+			</Font>
+		</Member>
+	</FontFamily>
+
+	<FontFamily name="SystemFont_NamePlateLevel" virtual="true">
+		<Member alphabet="roman">
+			<Font font="Fonts\FRIZQT__.TTF" height="10">
+				<Shadow>
+					<Offset>
+						<AbsDimension x="0.64" y="-0.64"/>
+					</Offset>
+					<Color r="0" g="0" b="0"/>
+				</Shadow>
+			</Font>
+		</Member>
+		<Member alphabet="korean">
+			<Font font="Fonts\2002.TTF" height="10">
+				<Shadow>
+					<Offset>
+						<AbsDimension x="0.64" y="-0.64"/>
+					</Offset>
+					<Color r="0" g="0" b="0"/>
+				</Shadow>
+			</Font>
+		</Member>
+		<Member alphabet="simplifiedchinese">
+			<Font font="Fonts\ARKai_T.ttf" height="10">
+				<Shadow>
+					<Offset>
+						<AbsDimension x="0.64" y="-0.64"/>
+					</Offset>
+					<Color r="0" g="0" b="0"/>
+				</Shadow>
+			</Font>
+		</Member>
+		<Member alphabet="traditionalchinese">
+			<Font font="Fonts\blei00d.TTF" height="10">
+				<Shadow>
+					<Offset>
+						<AbsDimension x="0.64" y="-0.64"/>
+					</Offset>
+					<Color r="0" g="0" b="0"/>
+				</Shadow>
+			</Font>
+		</Member>
+		<Member alphabet="russian">
+			<Font font="Fonts\FRIZQT___CYR.TTF" height="10">
+				<Shadow>
+					<Offset>
+						<AbsDimension x="0.64" y="-0.64"/>
 					</Offset>
 					<Color r="0" g="0" b="0"/>
 				</Shadow>

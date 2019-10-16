@@ -1,5 +1,4 @@
-DungeonEntranceDataProviderMixin = CreateFromMixins(CVarMapCanvasDataProviderMixin);
-DungeonEntranceDataProviderMixin:Init("showDungeonEntrancesOnMap", "SHOW_DUNGEON_ENTRANCES");
+DungeonEntranceDataProviderMixin = CreateFromMixins(MapCanvasDataProviderMixin);
 
 function DungeonEntranceDataProviderMixin:RemoveAllData()
 	self:GetMap():RemoveAllPinsByTemplate("DungeonEntrancePinTemplate");
@@ -7,10 +6,6 @@ end
 
 function DungeonEntranceDataProviderMixin:RefreshAllData(fromOnShow)
 	self:RemoveAllData();
-	
-	if not self:IsCVarSet() then
-		return;
-	end
 
 	local mapID = self:GetMap():GetMapID();
 	local dungeonEntrances = C_EncounterJournal.GetDungeonEntrancesForMap(mapID);

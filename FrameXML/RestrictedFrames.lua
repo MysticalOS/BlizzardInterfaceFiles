@@ -49,11 +49,11 @@ local HANDLE = {};
 local LOCAL_CHECK_Frame = CreateFrame("Frame");
 
 local function CheckForbidden(frame)
-	return LOCAL_CHECK_Frame.IsForbidden(frame);
+	return LOCAL_CHECK_Frame.IsForbidden(frame); 
 end
 
 local function MakeForbidden(frame)
-	LOCAL_CHECK_Frame.SetForbidden(frame);
+	LOCAL_CHECK_Frame.SetForbidden(frame); 
 end
 
 ---------------------------------------------------------------------------
@@ -203,54 +203,49 @@ function HANDLE:GetEffectiveAttribute(name, button, prefix, suffix)
     return nil;
 end
 
-local function ShouldAllowAccessToFrame(nolockdown, frame)
-	if frame:IsForbidden() then
-		return false;
-	end
-
-	if not nolockdown then
-        return frame:IsProtected();
-    end
-
-    return nolockdown;
-end
-
-local function GetValidatedFrameHandle(nolockdown, frame)
-	if ShouldAllowAccessToFrame(nolockdown, frame) then
-		return GetFrameHandle(frame);
-	end
-
-	return nil;
-end
-
 
 local function FrameHandleMapper(nolockdown, frame, nextFrame, ...)
     if (not frame) then
         return;
     end
-
-    frame = GetValidatedFrameHandle(nolockdown, frame);
-
-    if frame then
-        if (nextFrame) then
-            return frame, FrameHandleMapper(nolockdown, nextFrame, ...);
-        else
-            return frame;
+    -- Do an explicit protection check to avoid errors from
+    -- the frame handle lookup
+    local p = nolockdown;
+    if (not p) then
+        p = frame:IsProtected();
+    end
+    if (p) then
+        frame = GetFrameHandle(frame);
+        if (frame) then
+            if (nextFrame) then
+                return frame, FrameHandleMapper(nolockdown, nextFrame, ...);
+            else
+                return frame;
+            end
         end
     end
-
     if (nextFrame) then
         return FrameHandleMapper(nolockdown, nextFrame, ...);
     end
 end
 
-local function FrameHandleInserter(nolockdown, result, ...)
+local function FrameHandleInserter(result, ...)
+    local nolockdown = not InCombatLockdown();
     local idx = #result;
     for i = 1, select('#', ...) do
-        local frame = GetValidatedFrameHandle(nolockdown, select(i, ...));
-        if frame then
-			idx = idx + 1;
-			result[idx] = frame;
+        local frame = select(i, ...);
+        -- Do an explicit protection check to avoid errors from
+        -- the frame handle lookup
+        local p = nolockdown;
+        if (not p) then
+            p = frame:IsProtected();
+        end
+        if (p) then
+            frame = GetFrameHandle(frame);
+            if (frame) then
+                idx = idx + 1;
+                result[idx] = frame;
+            end
         end
     end
 
@@ -258,15 +253,17 @@ local function FrameHandleInserter(nolockdown, result, ...)
 end
 
 function HANDLE:GetChildren()
-    return FrameHandleMapper(not InCombatLockdown(), GetHandleFrame(self):GetChildren());
+    return FrameHandleMapper(not InCombatLockdown(),
+                             GetHandleFrame(self):GetChildren());
 end
 
 function HANDLE:GetChildList(tbl)
-    return FrameHandleInserter(not InCombatLockdown(), tbl, GetHandleFrame(self):GetChildren());
+    return FrameHandleInserter(tbl, GetHandleFrame(self):GetChildren());
 end
 
 function HANDLE:GetParent()
-    return FrameHandleMapper(not InCombatLockdown(), GetHandleFrame(self):GetParent());
+    return FrameHandleMapper(not InCombatLockdown(),
+                             GetHandleFrame(self):GetParent());
 end
 
 -- NOTE: Cannot allow the frame to figure out if it has mouse focus

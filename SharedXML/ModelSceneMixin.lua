@@ -13,12 +13,6 @@ if tbl then
 
 	if ( tbl.IsOnGlueScreen() ) then
 		tbl._G = _G;	--Allow us to explicitly access the global environment at the glue screens
-
-		Import("GetCharacterInfo");
-		Import("GetCharacterSelection");
-	else
-		Import("UnitRace");
-		Import("UnitSex");
 	end
 
 	setfenv(1, tbl);
@@ -149,59 +143,6 @@ end
 
 function ModelSceneMixin:GetActorByTag(tag)
 	return self.tagToActor[tag];
-end
-
-function ModelSceneMixin:AttachPlayerToMount(mountActor, animID, isSelfMount, disablePlayerMountPreview, spellVisualKitID)
-	local playerActor = self:GetPlayerActor("player-rider");
-	if (playerActor) then
-		if disablePlayerMountPreview or isSelfMount then
-			playerActor:ClearModel();
-		else
-			local sheathWeapons = true;
-			if (playerActor:SetModelByUnit("player", sheathWeapons)) then
-				local calcMountScale = mountActor:CalculateMountScale(playerActor);
-				local inverseScale = 1 / calcMountScale; 
-				playerActor:SetRequestedScale( inverseScale );
-				mountActor:AttachToMount(playerActor, animID, spellVisualKitID);
-			end
-		end
-	end
-end
-
-function ModelSceneMixin:GetPlayerActor(overrideActorName)
-	local playerRaceName;
-	local playerGender;
-	local actor;
-
-	if overrideActorName then
-		actor = self:GetActorByTag(overrideActorName);
-	else
-
-		if IsOnGlueScreen() then
-			local _, raceName, raceFilename, _, _, _, _, _, genderEnum = GetCharacterInfo(GetCharacterSelection());
-			playerRaceName = raceFilename;
-			playerGender = genderEnum;
-		else
-			local _, raceFilename = UnitRace("player");
-			playerRaceName = raceFilename;
-			playerGender = UnitSex("player");
-		end
-
-		if not playerRaceName or not playerGender then
-			return nil;
-		end
-		playerGender = (playerGender == 2) and "male" or "female";
-		playerRaceName = playerRaceName:lower();
-		local playerRaceActor = playerRaceName.."-"..playerGender;
-		actor = self:GetActorByTag(playerRaceActor);
-		if not actor then		
-			actor = self:GetActorByTag(playerRaceName);
-			if not actor then
-				actor = self:GetActorByTag("player");
-			end
-		end
-	end
-	return actor;
 end
 
 function ModelSceneMixin:ReleaseAllActors()
@@ -405,54 +346,4 @@ function ModelSceneMixin:SetDefaultLightDirection(x, y, z)
 	self.defaultLightDirectionX = x;
 	self.defaultLightDirectionY = y;
 	self.defaultLightDirectionZ = z;
-end
-
--- actorSettings = {
---	"actorTag" = { startDelay = 0, duration = 0, speed = 1 } -- duration 0 means no automatic stoppage
--- }
-function ModelSceneMixin:ShowAndAnimateActors(actorSettings, onFinishedCallback)
-	self:Show();
-	local totalTime = 0;
-	for actorTag, actorInfo in pairs(actorSettings) do
-		local actor = self:GetActorByTag(actorTag);
-		if actor then
-			local runningTime = actorInfo.startDelay + actorInfo.duration;
-			if actorInfo.startDelay > 0 then
-				actor:SetAnimation(0, 0, 0, 0);
-				C_Timer.After(actorInfo.startDelay,
-					function()
-						actor:SetAnimation(0, 0, actorInfo.speed, 0);
-					end
-				);
-			else
-				actor:SetAnimation(0, 0, actorInfo.speed, 0);
-			end
-			if actorInfo.duration > 0 then
-				C_Timer.After(runningTime,
-					function()
-						actor:SetAnimation(0, 0, 0, 0);
-					end
-				);
-			end
-			if runningTime > totalTime then
-				totalTime = runningTime;
-			end
-		end
-	end
-
-	if onFinishedCallback and totalTime > 0 then
-		C_Timer.After(totalTime, onFinishedCallback);
-	end
-end
-
-PanningModelSceneMixin = CreateFromMixins(ModelSceneMixin);
-
-function PanningModelSceneMixin:TransitionToModelSceneID(modelSceneID, cameraTransitionType, cameraModificationType, forceEvenIfSame)
-	ModelSceneMixin.TransitionToModelSceneID(self, modelSceneID, cameraTransitionType, cameraModificationType, forceEvenIfSame);
-
-	local camera = self:GetActiveCamera();
-	if camera then
-		camera:SetRightMouseButtonXMode(ORBIT_CAMERA_MOUSE_PAN_HORIZONTAL, true);
-		camera:SetRightMouseButtonYMode(ORBIT_CAMERA_MOUSE_PAN_VERTICAL, true);
-	end
 end
