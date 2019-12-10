@@ -1,5 +1,6 @@
 local GUILD_CARDS_PER_PAGE = 3;
 local LOAD_PAGES_IN_ADVANCE = 1;
+local REQUEST_GUILD_CARDS_NUM = 21;
 local REQUEST_TO_JOIN_HEIGHT = 420;
 local REQUEST_TO_JOIN_TEXT_HEIGHT = 14;
 local MAX_DESCRIPTION_HEIGHT = 150;
@@ -334,7 +335,7 @@ function ClubFinderRequestToJoinMixin:Initialize()
 	self:SetHeight((REQUEST_TO_JOIN_HEIGHT + extraFrameHeight) - (extraHeight));
 
 	self.ClubDescription:ClearAllPoints();
-	self.ClubDescription:SetPoint("BOTTOM", self.ClubName, "BOTTOM", 0, -usedHeight);
+	self.ClubDescription:SetPoint("BOTTOM", self.ClubName, "BOTTOM", 0, -(usedHeight + 2));
 
 	self.MessageFrame:ClearAllPoints();
 	self.MessageFrame:SetPoint("BOTTOM", self.ClubDescription, "BOTTOM", 0, -85);
@@ -1657,7 +1658,19 @@ function ClubFinderGuildCardsBaseMixin:OnMouseWheel(delta)
 	end
 end
 
+function ClubFinderGuildCardsBaseMixin:SetSearchingState()
+	self.SearchingSpinner:Show();
+	self:GetParent().InsetFrame.GuildDescription:Hide();
+	self.NextPage:SetEnabled(false);
+	self:HideCardList();
+end
+
 function ClubFinderGuildCardsBaseMixin:PageNext()
+	if (self.requestedPage and not self.newRequest) then
+		self:SetSearchingState();
+		return;
+	end
+
 	self.pageNumber = self.pageNumber + 1;
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 	CloseDropDownMenus();
@@ -1687,10 +1700,6 @@ function ClubFinderGuildCardsBaseMixin:FindAndSetReportedCard(clubFinderGUID)
 end
 
 function ClubFinderGuildCardsBaseMixin:RefreshLayout(cardPage)
-	if (not self:IsShown()) then
-		return;
-	end
-
 	if (not self:IsShown()) then
 		return;
 	end
@@ -1732,10 +1741,7 @@ function ClubFinderGuildCardsBaseMixin:RefreshLayout(cardPage)
 		end
 	else
 		if (self.requestedPage and not self.newRequest) then
-			self.SearchingSpinner:Show();
-			self:GetParent().InsetFrame.GuildDescription:Hide();
-			self.PreviousPage:SetEnabled(false);
-			self.NextPage:SetEnabled(false);
+			self:SetSearchingState();
 		else
 			self.PreviousPage:Hide();
 			self.NextPage:Hide();
@@ -1751,10 +1757,9 @@ function ClubFinderGuildCardsBaseMixin:RefreshLayout(cardPage)
 	local numLoadedPages = math.ceil(numCardsTotal / GUILD_CARDS_PER_PAGE);
 	local shouldRequestNextPage = (self.pagingEnabled and (cardPage + LOAD_PAGES_IN_ADVANCE == numLoadedPages) and ( cardPage + LOAD_PAGES_IN_ADVANCE < self.numPages));
 
-	if (shouldRequestNextPage and self.showingCards) then
+	if (shouldRequestNextPage and self.showingCards and not self.requestedPage) then
 		local startingIndex = cardPage * GUILD_CARDS_PER_PAGE;
-		local pageSize = LOAD_PAGES_IN_ADVANCE * GUILD_CARDS_PER_PAGE;
-		C_ClubFinder.RequestNextGuildPage(startingIndex, 6);
+		C_ClubFinder.RequestNextGuildPage(startingIndex, REQUEST_GUILD_CARDS_NUM);
 		self.requestedPage = true;
 	end
 
@@ -1865,7 +1870,7 @@ function ClubFinderGuildAndCommunityMixin:OnEvent(event, ...)
 		if (buildGuild) then
 			self.GuildCards:BuildCardList();
 			if (self.isGuildType) then
-				self.requestedPage = false;
+				self.GuildCards.requestedPage = false;
 				if (self.GuildCards.newRequest) then
 					self.GuildCards.pageNumber = 1;
 					self.GuildCards.newRequest = false;
