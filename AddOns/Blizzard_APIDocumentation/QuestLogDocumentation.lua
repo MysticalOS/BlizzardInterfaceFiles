@@ -7,6 +7,15 @@ local QuestLog =
 	Functions =
 	{
 		{
+			Name = "GetActiveThreatMaps",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "uiMapIDs", Type = "table", InnerType = "number", Nilable = false },
+			},
+		},
+		{
 			Name = "GetMapForQuestPOIs",
 			Type = "Function",
 
@@ -167,6 +176,15 @@ local QuestLog =
 			},
 		},
 		{
+			Name = "HasActiveThreats",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "hasActiveThreats", Type = "bool", Nilable = false },
+			},
+		},
+		{
 			Name = "IsLegendaryQuest",
 			Type = "Function",
 
@@ -265,6 +283,35 @@ local QuestLog =
 			},
 		},
 		{
+			Name = "IsThreatQuest",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "questID", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "isThreat", Type = "bool", Nilable = false },
+			},
+		},
+		{
+			Name = "QuestCanHaveWarModeBonus",
+			Type = "Function",
+			Documentation = { "Tests whether a quest is eligible for warmode bonuses (e.g. most world quests, some daily quests" },
+
+			Arguments =
+			{
+				{ Name = "questID", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "hasBonus", Type = "bool", Nilable = false },
+			},
+		},
+		{
 			Name = "QuestHasQuestSessionBonus",
 			Type = "Function",
 
@@ -281,6 +328,7 @@ local QuestLog =
 		{
 			Name = "QuestHasWarModeBonus",
 			Type = "Function",
+			Documentation = { "Tests whether a quest in the player's quest log that is eligible for warmode bonuses (see 'QuestCanHaveWarModeBOnus') has been completed in warmode (including accepting it)" },
 
 			Arguments =
 			{

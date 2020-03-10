@@ -87,6 +87,8 @@ function QuestUtil.GetWorldQuestAtlasInfo(worldQuestType, inProgress, tradeskill
 		else -- "Horde" or "Neutral"
 			iconAtlas = "worldquest-icon-horde";
 		end
+	elseif ( worldQuestType == LE_QUEST_TAG_TYPE_THREAT ) then
+		iconAtlas = "worldquest-icon-nzoth";
 	else
 		return "worldquest-questmarker-questbang", 6, 15;
 	end
@@ -259,7 +261,7 @@ local function ShouldShowWarModeBonus(questID, currencyID, firstInstance)
 		return false;
 	end
 
-	return QuestUtils_IsQuestWorldQuest(questID) and C_QuestLog.QuestHasWarModeBonus(questID) and not C_CurrencyInfo.GetFactionGrantedByCurrency(currencyID);
+	return QuestUtils_IsQuestWorldQuest(questID) and C_QuestLog.QuestCanHaveWarModeBonus(questID) and not C_CurrencyInfo.GetFactionGrantedByCurrency(currencyID);
 end
 
 function QuestUtils_GetQuestDecorationLink(linkType, questID, icon, width, height)
@@ -299,7 +301,7 @@ end
 function QuestUtils_AddQuestRewardsToTooltip(tooltip, questID, style)
 	local hasAnySingleLineRewards = false;
 	local isWarModeDesired = C_PvP.IsWarModeDesired();
-	local questHasWarModeBonus = C_QuestLog.QuestHasWarModeBonus(questID);
+	local questHasWarModeBonus = C_QuestLog.QuestCanHaveWarModeBonus(questID);
 
 	-- xp
 	local totalXp, baseXp = GetQuestLogRewardXP(questID);
